@@ -183,6 +183,7 @@ client.on(Events.InteractionCreate, async interaction => {
           '**Player:** `/player` `/whoami`',
           '**Bot:** `/ping` `/uptime` `/help`',
           '**Moderation:** `/kick` `/ban` `/unban` `/timeout` `/clear`',
+          '**Moderator:** `/dropall item amount`',
           '**Administration:** `/announce` `/botstatus`',
           '**Emulator (Admin):** `/start` `/stop` `/restart` `/emulatorstatus` `/clearall`'
         ].join('\n')).setTimestamp()] });
@@ -328,8 +329,19 @@ function sendEmulatorConsoleCommand(command) {
 
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
-  if (!['start', 'stop', 'restart', 'emulatorstatus', 'clearall'].includes(interaction.commandName)) return;
+  if (!['start', 'stop', 'restart', 'emulatorstatus', 'clearall', 'dropall'].includes(interaction.commandName)) return;
   try {
+    if (interaction.commandName === 'dropall') {
+      if (!(await requireModerator(interaction))) return;
+      const status = readEmulatorStatus();
+      if (!status?.running) { await interaction.reply({ content: 'The Aera emulator is not running.', ephemeral: true }); return; }
+      const itemId = interaction.options.getInteger('item', true);
+      const amount = interaction.options.getInteger('amount', true);
+      const response = await sendEmulatorConsoleCommand(`dropall ${itemId} ${amount}`);
+      const description = response?.ok === false ? `Failed to execute \`dropall ${itemId} ${amount}\`: ${response.message || 'Unknown error.'}` : (response?.message || `The emulator processed \`dropall ${itemId} ${amount}\`.`);
+      await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Emulator — dropall').setDescription(description).setFooter({ text: `Requested by ${interaction.user.tag}` }).setTimestamp()], ephemeral: true });
+      return;
+    }
     if (!(await requireAdministrator(interaction))) return;
     if (interaction.commandName === 'emulatorstatus') {
       const status = readEmulatorStatus();
