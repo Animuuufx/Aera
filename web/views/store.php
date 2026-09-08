@@ -8,7 +8,7 @@
 <?php elseif(!empty($p['PurchaseURL'])): ?><div class="paypal-wrap"><a class="btn btn-gold" href="<?= e($p['PurchaseURL']) ?>" target="_blank" rel="noopener">Purchase</a></div>
 <?php else: ?><div class="paypal-wrap"><paypal-button id="paypal-btn-<?= (int)$p['id'] ?>" type="pay" hidden></paypal-button><div class="paypal-status" id="paypal-status-<?= (int)$p['id'] ?>">Loading PayPal…</div></div><?php endif; ?></div></article><?php endforeach; ?></div><?php endif; ?></section>
 <?php if($user && $products): ?><script src="<?= $paypalMode==='live'?'https://www.paypal.com/web-sdk/v6/core':'https://www.sandbox.paypal.com/web-sdk/v6/core' ?>" onload="aeraPayPalLoaded()"></script><script>
-const aeraCsrf=<?= json_encode(csrf_token()) ?>;
+const aeraCsrf=<?= json_encode((string)\Aera\Foundation\Csrf::token()) ?>;
 async function aeraFetch(u,o={}){o.headers=Object.assign({'Content-Type':'application/x-www-form-urlencoded'},o.headers||{});return fetch(u,o)}
 async function aeraCreateOrder(id){const r=await aeraFetch('/api/store/paypal/create-order',{method:'POST',body:new URLSearchParams({_token:aeraCsrf,productId:String(id)})});const d=await r.json();if(!r.ok||!d.id)throw new Error(d.error||'Unable to create PayPal order.');return d.id}
 async function aeraCapture(id){const r=await aeraFetch('/api/store/paypal/'+encodeURIComponent(id)+'/capture',{method:'POST',body:new URLSearchParams({_token:aeraCsrf})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||'Payment capture failed.');return d}
