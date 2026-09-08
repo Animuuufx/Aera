@@ -43,6 +43,7 @@ PHP;
             $code = str_replace($helpNeedle, $helpReplacement, $code, $helpReplacements);
         }
 
+        // Keep the generated router source valid PHP when evaluated.
         $code = preg_replace('/^<\?php\s*/', '', $code, 1) ?? $code;
         eval($code);
         return;
