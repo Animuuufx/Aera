@@ -124,6 +124,8 @@ final class HomeController
         View::render('news',['post'=>$post]);
     }
 
+    public function wiki(Request $r): void { View::render('wiki'); }
+
     public function character(Request $r): void
     {
         $name=trim((string)$r->input('name',''));
