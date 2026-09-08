@@ -2,11 +2,11 @@ package fi.joniaromaa.adobeair.discordrpc
 {
     import flash.events.EventDispatcher;
     import flash.events.StatusEvent;
-    import flash.utils.getDefinitionByName;
+    import flash.external.ExtensionContext;
 
     public class DiscordRpc extends EventDispatcher
     {
-        private var extension:Object;
+        private var extension:ExtensionContext;
         public var initialized:Boolean = false;
 
         public function DiscordRpc()
@@ -18,16 +18,7 @@ package fi.joniaromaa.adobeair.discordrpc
         {
             try
             {
-                var extensionContextClass:Object = getDefinitionByName("flash.external.ExtensionContext");
-                if (extensionContextClass == null)
-                {
-                    trace("[Aera Discord] ExtensionContext unavailable");
-                    return;
-                }
-
-                // Invoke the static factory dynamically. This keeps the loader source
-                // compatible with Animate's compiler while still using the AIR ANE.
-                extension = extensionContextClass["createExtensionContext"](
+                extension = ExtensionContext.createExtensionContext(
                     "fi.joniaromaa.adobeair.discordrpc",
                     null
                 );
@@ -54,9 +45,10 @@ package fi.joniaromaa.adobeair.discordrpc
 
             try
             {
-                extension.call("init", applicationId);
                 extension.addEventListener(StatusEvent.STATUS, onStatus, false, 0, true);
-                trace("[Aera Discord] RPC initialized");
+                extension.call("init", applicationId);
+                extension.call("runCallbacks");
+                trace("[Aera Discord] RPC initialized application=" + applicationId);
             }
             catch (e:Error)
             {
