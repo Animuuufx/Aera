@@ -107,6 +107,14 @@ final class ConsoleBridge
                     $this->send($id, ['type' => 'result', 'ok' => false, 'message' => 'Command is empty.']);
                     continue;
                 }
+
+                // The Discord /clearall command intentionally maps to the
+                // emulator's existing reload command. It refreshes database
+                // backed caches and does not clear, kick, or disconnect players.
+                if (strcasecmp($command, 'clear all') === 0 || strcasecmp($command, 'clearall') === 0) {
+                    $command = 'reload';
+                }
+
                 try {
                     $result = $commandHandler($command);
                     if (is_string($result)) $result = ['ok' => true, 'message' => $result];
