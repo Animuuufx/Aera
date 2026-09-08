@@ -1,3 +1,6 @@
 node_modules/
 .env
 npm-debug.log*
+discord-bot.pid
+discord-bot.log
+discord-bot-error.log
