@@ -2,8 +2,10 @@
 declare(strict_types=1);
 namespace Aera\Controllers;
 
+use Aera\Foundation\Config;
 use Aera\Foundation\Database;
 use Aera\Foundation\Request;
+use Aera\Foundation\Response;
 use Aera\Foundation\View;
 use Throwable;
 
@@ -32,6 +34,58 @@ final class WikiController
             catch(Throwable) { $counts[$t]=0; }
         }
         View::render('wiki',['type'=>$type,'id'=>$id,'q'=>$q,'page'=>$page,'rows'=>$rows,'total'=>$total,'detail'=>$detail,'related'=>$related,'counts'=>$counts]);
+    }
+
+    /**
+     * Resolve a bare /gamefiles/<filename>.swf URL to the actual asset.
+     * Some database rows store only a basename (for example NewWarriorB2.swf)
+     * while the real file lives under classes/M, classes/F, maps, mon, or an
+     * item subdirectory. Keeping the public URL stable means Ruffle can load
+     * every SWF without exposing the internal database path.
+     */
+    public function gamefile(Request $r): never
+    {
+        $name = trim(str_replace('\\','/',(string)$r->input('file','')));
+        if ($name === '' || str_contains($name,'/') || str_contains($name,'..') || !preg_match('/\.swf$/i',$name)) {
+            Response::abort(404,'SWF not found.');
+        }
+
+        $public = (string)Config::get('paths.public');
+        $root = rtrim($public,'/\\') . DIRECTORY_SEPARATOR . 'gamefiles';
+        if (!is_dir($root)) Response::abort(404,'SWF directory not found.');
+
+        $requested = $root . DIRECTORY_SEPARATOR . $name;
+        if (is_file($requested)) {
+            Response::redirect('/gamefiles/' . rawurlencode($name), 302);
+        }
+
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+            $matches = [];
+            foreach ($iterator as $file) {
+                if (!$file->isFile() || strcasecmp($file->getFilename(),$name)!==0) continue;
+                $matches[] = str_replace('\\','/',substr($file->getPathname(),strlen($public)+1));
+            }
+
+            // Prefer the male class asset when both class genders exist, then
+            // fall back to the first exact basename match.
+            usort($matches, static function(string $a,string $b): int {
+                $ap = str_starts_with(strtolower($a),'gamefiles/classes/m/') ? 0 : 1;
+                $bp = str_starts_with(strtolower($b),'gamefiles/classes/m/') ? 0 : 1;
+                return $ap <=> $bp ?: strcmp($a,$b);
+            });
+
+            if ($matches) {
+                Response::redirect('/' . ltrim($matches[0],'/'), 302);
+            }
+        } catch(Throwable) {
+            // Treat filesystem lookup failures as a normal missing asset.
+        }
+
+        Response::abort(404,'SWF not found.');
     }
 
     private function listing(string $type,string $q,int $page): array
