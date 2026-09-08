@@ -21,6 +21,7 @@ package
             sourceID = _arg_1;
             isFBSource = (sourceID == "FACEBOOK");
             rootClass = _arg_2;
+            DiscordPresence.watchGame(rootClass);
             conn = ExternalInterface.addCallback("SendMessage", rootClass.FBMessage);
         }
 
