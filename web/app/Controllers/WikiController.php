@@ -60,7 +60,7 @@ final class WikiController
         // Only allow safe relative paths when a caller supplies a folder.
         $candidate = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $namePath);
         if (is_file($candidate)) {
-            return $this->streamSwf($candidate);
+            $this->streamSwf($candidate);
         }
 
         // If the database stores only a basename (e.g. NewWarriorB2.swf),
@@ -92,7 +92,7 @@ final class WikiController
             return $ap <=> $bp ?: strcmp($al,$bl);
         });
 
-        return $this->streamSwf($matches[0]);
+        $this->streamSwf($matches[0]);
     }
 
     private function streamSwf(string $path): never
