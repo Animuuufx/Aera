@@ -16,8 +16,6 @@ final class AdminDiscordController
     private function script(): string { return $this->root() . '/aera-discord-bot-control.ps1'; }
     public function index(Request $request): void
     {
-        // Do not run PowerShell during the initial page request. Status is read from
-        // the bot's lightweight localhost health endpoint instead.
         $admin=Auth::requireAdmin(); $config=$this->readEnv();
         View::render('admin.discord',['admin'=>$admin,'config'=>$config,'status'=>['ok'=>true,'running'=>false,'message'=>'Checking bot status…'],'health'=>['ok'=>false,'discordReady'=>false,'message'=>'Checking…'],'log'=>$this->tailLog(),'botRoot'=>$this->root(),'configured'=>!empty($config['DISCORD_TOKEN'])]);
     }
@@ -41,14 +39,15 @@ final class AdminDiscordController
     private function envQuote(string $value): string { return '"'.str_replace(['\\','"',"\r","\n"],['\\\\','\\"','',''],$value).'"'; }
     public function control(Request $request): void
     {
-        $admin=Auth::requireAdmin();if((int)($admin['Access']??0)<60)Response::json(['ok'=>false,'message'=>'Administrator access is required.'],403);Csrf::verify($request);$action=strtolower(trim((string)$request->input('action','')));if(!in_array($action,['start','stop','restart','deploy'],true))Response::json(['ok'=>false,'message'=>'Unknown Discord bot action.'],422);$result=$this->runControl($action);Response::json($result,!empty($result['ok'])?200:500);
+        $admin=Auth::requireAdmin();if((int)($admin['Access']??0)<60)Response::json(['ok'=>false,'message'=>'Administrator access is required.'],403);Csrf::verify($request);$action=strtolower(trim((string)$request->input('action','')));if(!in_array($action,['start','stop','restart','deploy'],true))Response::json(['ok'=>false,'message'=>'Unknown Discord bot action.'],422);
+        // Never wait for PowerShell from an IIS request. Start/stop/restart can
+        // launch a child process and return immediately; the browser observes
+        // the real state through the lightweight /status endpoint.
+        $result=$this->queueControl($action);Response::json($result,!empty($result['ok'])?202:500);
     }
     public function status(Request $request): void
     {
         Auth::requireAdmin();
-        // This endpoint is polled by the browser every 2 seconds. Never invoke
-        // PowerShell here: doing so repeatedly can consume IIS/PHP workers and
-        // make the entire website appear to hang during bot start/stop operations.
         $health=$this->safeHealth();
         $running=!empty($health['ok']);
         $pid=null;
@@ -60,15 +59,26 @@ final class AdminDiscordController
         $process=['ok'=>true,'running'=>$running,'pid'=>$pid,'message'=>$running?'Discord bot process is running.':'Discord bot process is stopped.'];
         Response::json(['ok'=>true,'process'=>$process,'health'=>$health,'log'=>$this->tailLog()]);
     }
-    private function runControl(string $action): array
+    private function queueControl(string $action): array
     {
-        if(!is_file($this->script()))return ['ok'=>false,'running'=>false,'message'=>'Discord bot control script is missing.'];if(!function_exists('proc_open'))return ['ok'=>false,'running'=>false,'message'=>'PHP process control (proc_open) is disabled.'];$comSpec=(string)getenv('ComSpec');$powershell=$comSpec!==''?dirname($comSpec).'/WindowsPowerShell/v1.0/powershell.exe':'powershell.exe';if(!is_file($powershell)&&$powershell!=='powershell.exe')$powershell='powershell.exe';$cmd='-NoProfile -ExecutionPolicy Bypass -File '.escapeshellarg($this->script()).' -Action '.escapeshellarg($action);
-        try{$proc=proc_open($powershell.' '.$cmd,[1=>['pipe','w'],2=>['pipe','w']],$pipes,$this->root());if(!is_resource($proc))return ['ok'=>false,'running'=>false,'message'=>'Could not start the Discord bot controller.'];$stdout=stream_get_contents($pipes[1]);$stderr=stream_get_contents($pipes[2]);foreach($pipes as $pipe)if(is_resource($pipe))fclose($pipe);$exit=proc_close($proc);$raw=trim((string)$stdout);$decoded=json_decode($raw,true);if(is_array($decoded))return $decoded+['exitCode'=>$exit];$message=$raw!==''?$raw:trim((string)$stderr);return ['ok'=>$exit===0,'running'=>false,'message'=>$message!==''?$message:'Discord bot controller returned no output.','exitCode'=>$exit];}catch(Throwable $e){return ['ok'=>false,'running'=>false,'message'=>'Discord bot controller unavailable: '.$e->getMessage()];}
+        if(!is_file($this->script()))return ['ok'=>false,'running'=>false,'message'=>'Discord bot control script is missing.'];
+        if(!function_exists('popen'))return ['ok'=>false,'running'=>false,'message'=>'PHP process control (popen) is disabled.'];
+        $comSpec=(string)getenv('ComSpec');
+        $powershell=$comSpec!==''?dirname($comSpec).'/WindowsPowerShell/v1.0/powershell.exe':'powershell.exe';
+        if(!is_file($powershell)&&$powershell!=='powershell.exe')$powershell='powershell.exe';
+        $script=$this->script();
+        $command='start "" /B "'.$powershell.'" -NoProfile -ExecutionPolicy Bypass -File "'.$script.'" -Action '.$action;
+        try{
+            $pipe=@popen('cmd.exe /D /C '.$command,'r');
+            if(!is_resource($pipe))return ['ok'=>false,'running'=>false,'message'=>'Could not queue the Discord bot controller.'];
+            @pclose($pipe);
+            return ['ok'=>true,'queued'=>true,'action'=>$action,'running'=>false,'message'=>'Discord bot '.$action.' request queued.'];
+        }catch(Throwable $e){return ['ok'=>false,'running'=>false,'message'=>'Discord bot controller unavailable: '.$e->getMessage()];}
     }
     private function safeHealth(): array { try{return $this->health();}catch(Throwable $e){return ['ok'=>false,'discordReady'=>false,'message'=>'Health check unavailable.'];} }
     private function health(): array
     {
-        $cfg=$this->readEnv();$port=(int)($cfg['BOT_STATUS_PORT']??5592);if($port<1||$port>65535||!function_exists('fsockopen'))return ['ok'=>false,'discordReady'=>false,'message'=>'Health endpoint offline.'];$fp=@fsockopen('127.0.0.1',$port,$errno,$errstr,0.35);if(!$fp)return ['ok'=>false,'discordReady'=>false,'message'=>'Health endpoint offline.'];stream_set_timeout($fp,1);fwrite($fp,"GET /health HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n");$response=stream_get_contents($fp);fclose($fp);$parts=preg_split("/\r\n\r\n/",$response,2);$data=json_decode($parts[1]??'',true);return is_array($data)?$data+['ok'=>true]:['ok'=>false,'discordReady'=>false,'message'=>'Invalid health response.'];
+        $cfg=$this->readEnv();$port=(int)($cfg['BOT_STATUS_PORT']??5592);if($port<1||$port>65535||!function_exists('fsockopen'))return ['ok'=>false,'discordReady'=>false,'message'=>'Health endpoint offline.'];$fp=@fsockopen('127.0.0.1',$port,$errno,$errstr,0.20);if(!$fp)return ['ok'=>false,'discordReady'=>false,'message'=>'Health endpoint offline.'];stream_set_timeout($fp,0,500000);fwrite($fp,"GET /health HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n");$response=stream_get_contents($fp);fclose($fp);$parts=preg_split("/\r\n\r\n/",$response,2);$data=json_decode($parts[1]??'',true);return is_array($data)?$data+['ok'=>true]:['ok'=>false,'discordReady'=>false,'message'=>'Invalid health response.'];
     }
     private function readEnv(): array
     {
