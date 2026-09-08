@@ -1,4 +1,0 @@
-[2026-09-07 19:57:06] ERROR   PHP 2: mkdir(): File exists @ C:\inetpub\wwwroot\AERA\Emulator\PHP\src\GameServer.php:1091
-[2026-09-07 19:57:06] INFO    Aera PHP Emulator listening on 0.0.0.0:5589
-[2026-09-07 19:57:06] INFO    Live admin console listening on 127.0.0.1:5591
-[2026-09-07 19:57:06] INFO    Protocol: SmartFoxServer 1.x compatible socket + Aera xt requests
