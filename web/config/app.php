@@ -19,5 +19,12 @@ return [
     ],
     'session' => ['name' => 'aera_session'],
     'security' => ['admin_min_access' => 40, 'game_session_hours' => 12],
+    'paypal' => [
+        'mode' => 'sandbox',
+        'client_id' => 'AU0ZwVV1n7hGYG9mQ7dFVk7m_v7fJ0WNMwtGoo-oKAERD0b4012IQn8MCX5UlqnGEo09dbOmUzZy_dL1',
+        'client_secret' => '',
+        'merchant_email' => 'animufx1119@gmail.com',
+        'brand_name' => 'Aera',
+    ],
     'paths' => [],
 ];
