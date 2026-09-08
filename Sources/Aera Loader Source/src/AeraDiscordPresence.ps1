@@ -9,8 +9,6 @@ $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Lo
 $listener.Start()
 
 $ipc = $null
-$ipcReader = $null
-$ipcWriter = $null
 $activitySet = $false
 
 function New-Nonce {
@@ -69,15 +67,17 @@ function Connect-Discord {
 function Set-DiscordActivity {
     param(
         [string]$Player,
+        [string]$Room,
         [long]$StartUnixSeconds
     )
     if (-not $Player) { return }
+    if (-not $Room) { $Room = 'Unknown room' }
     if (-not (Connect-Discord)) { return }
 
     $activity = @{
         type = 0
         details = 'Playing as ' + $Player
-        state = 'Aera'
+        state = 'Room: ' + $Room
         timestamps = @{ start = $StartUnixSeconds }
         instance = $true
     }
@@ -115,7 +115,7 @@ function Handle-Client {
             if ($byte -lt 0) { break }
             if ($byte -eq 0 -or $byte -eq 10) { break }
             $first.Add([byte]$byte)
-            if ($first.Count -gt 64) { break }
+            if ($first.Count -gt 256) { break }
         }
         $header = [System.Text.Encoding]::UTF8.GetString($first.ToArray())
         if ($header -like '<policy-file-request/*') {
@@ -126,12 +126,11 @@ function Handle-Client {
             return
         }
 
-        $buffer = $header
-        if ($buffer.Length -gt 0) {
+        if ($header.Trim().Length -gt 0) {
             try {
-                $msg = $buffer | ConvertFrom-Json
+                $msg = $header | ConvertFrom-Json
                 if ($msg.type -eq 'presence') {
-                    Set-DiscordActivity -Player ([string]$msg.player) -StartUnixSeconds ([long]$msg.start)
+                    Set-DiscordActivity -Player ([string]$msg.player) -Room ([string]$msg.room) -StartUnixSeconds ([long]$msg.start)
                 }
             } catch {}
         }
@@ -144,7 +143,7 @@ function Handle-Client {
             try {
                 $msg = $line | ConvertFrom-Json
                 if ($msg.type -eq 'presence') {
-                    Set-DiscordActivity -Player ([string]$msg.player) -StartUnixSeconds ([long]$msg.start)
+                    Set-DiscordActivity -Player ([string]$msg.player) -Room ([string]$msg.room) -StartUnixSeconds ([long]$msg.start)
                 }
             } catch {}
         }
