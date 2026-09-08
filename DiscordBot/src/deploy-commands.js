@@ -38,7 +38,11 @@ const commands = [
     .addStringOption(option => option.setName('reason').setDescription('Reason for the timeout.').setMaxLength(512)),
   new SlashCommandBuilder().setName('clear').setDescription('Delete recent messages in the current channel.')
     .addIntegerOption(option => option.setName('amount').setDescription('Number of messages to delete (1-100).').setMinValue(1).setMaxValue(100).setRequired(true)),
-  new SlashCommandBuilder().setName('botstatus').setDescription('Show detailed Discord bot status.')
+  new SlashCommandBuilder().setName('botstatus').setDescription('Show detailed Discord bot status.'),
+  new SlashCommandBuilder().setName('start').setDescription('Start the Aera PHP emulator (administrator only).'),
+  new SlashCommandBuilder().setName('stop').setDescription('Stop the Aera PHP emulator (administrator only).'),
+  new SlashCommandBuilder().setName('restart').setDescription('Restart the Aera PHP emulator (administrator only).'),
+  new SlashCommandBuilder().setName('emulatorstatus').setDescription('Show Aera PHP emulator supervisor status (administrator only).')
 ].map(command => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);
