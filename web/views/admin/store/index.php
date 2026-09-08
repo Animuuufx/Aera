@@ -1,5 +1,5 @@
-<?php $title='Store'; $heading='Store Manager'; $subheading='Manage products, pricing, images, and purchase links shown on the public Store page.'; ob_start(); ?>
-<div class="panel-title"><div><h2>Store</h2><p class="muted">Add game extras, cosmetics, upgrades, supporter packages, or other products.</p></div><a class="btn btn-gold" href="/admin/store/form">Add Product</a></div>
+<?php $title='Store'; $heading='Store Manager'; $subheading='Manage products, pricing, rewards, and PayPal checkout settings.'; ob_start(); ?>
+<div class="panel-title"><div><h2>Store</h2><p class="muted">Add game extras, cosmetics, upgrades, supporter packages, or other products.</p></div><div><a class="btn btn-ghost" href="/admin/store/paypal">PayPal Settings</a> <a class="btn btn-gold" href="/admin/store/form">Add Product</a></div></div>
 <div class="panel">
 <?php if(!$products): ?><p class="muted">No store products have been configured yet.</p><?php else: ?>
 <div class="table-wrap"><table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Status</th><th>Order</th><th>Actions</th></tr></thead><tbody>
