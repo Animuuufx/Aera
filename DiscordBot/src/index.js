@@ -14,6 +14,7 @@ const parseRoleIds = name => env(name).split(',').map(value => value.trim()).fil
 const moderatorRoleIds = parseRoleIds('DISCORD_MOD_ROLE_IDS');
 const administratorRoleIds = parseRoleIds('DISCORD_ADMIN_ROLE_IDS');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const botStartedAt = Date.now();
 
 function hasConfiguredRole(interaction, roleIds) {
   return roleIds.length > 0 && interaction.member?.roles?.cache?.some(role => roleIds.includes(role.id));
@@ -75,12 +76,24 @@ async function getOnlineCount() {
   return Number(rows[0]?.count || 0);
 }
 async function getServerRows() {
-  const [rows] = await pool.query('SELECT * FROM `servers` ORDER BY `id` ASC');
+  const [rows] = await pool.query('SELECT * FROM `servers`');
   return rows;
 }
-async function getColumnValue(row, candidates) {
+function getColumnValue(row, candidates) {
   const key = Object.keys(row).find(column => candidates.some(candidate => column.toLowerCase() === candidate.toLowerCase()));
   return key ? row[key] : null;
+}
+function formatUptime(ms) {
+  let seconds = Math.floor(ms / 1000);
+  const days = Math.floor(seconds / 86400); seconds %= 86400;
+  const hours = Math.floor(seconds / 3600); seconds %= 3600;
+  const minutes = Math.floor(seconds / 60); seconds %= 60;
+  const parts = [];
+  if (days) parts.push(`${days}d`);
+  if (hours) parts.push(`${hours}h`);
+  if (minutes) parts.push(`${minutes}m`);
+  parts.push(`${seconds}s`);
+  return parts.join(' ');
 }
 
 client.once(Events.ClientReady, async ready => {
@@ -114,7 +127,39 @@ client.on(Events.InteractionCreate, async interaction => {
           const status = getColumnValue(row, ['status', 'online']) ?? 'Online';
           return `**${name}** — ${status} — ${count} players`;
         }).join('\n');
-        await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Servers').setDescription(description).setTimestamp()] });
+        await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Servers').setDescription(description.slice(0, 4000)).setTimestamp()] });
+        break;
+      }
+      case 'serverinfo': {
+        const guild = interaction.guild;
+        if (!guild) { await interaction.reply({ content: 'This command can only be used inside a Discord server.', ephemeral: true }); break; }
+        await interaction.reply({ embeds: [new EmbedBuilder().setTitle(guild.name).addFields(
+          { name: 'Owner', value: `<@${guild.ownerId}>`, inline: true },
+          { name: 'Members', value: String(guild.memberCount), inline: true },
+          { name: 'Channels', value: String(guild.channels.cache.size), inline: true },
+          { name: 'Roles', value: String(guild.roles.cache.size), inline: true },
+          { name: 'Created', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:F>`, inline: true },
+          { name: 'Server ID', value: guild.id, inline: true }
+        ).setTimestamp()] });
+        break;
+      }
+      case 'uptime': {
+        await interaction.reply(`Aera Discord bot uptime: **${formatUptime(Date.now() - botStartedAt)}**.`);
+        break;
+      }
+      case 'whoami': {
+        const permissions = interaction.memberPermissions?.toArray?.() || [];
+        const configuredModerator = hasConfiguredRole(interaction, moderatorRoleIds);
+        const configuredAdministrator = hasConfiguredRole(interaction, administratorRoleIds);
+        const roles = interaction.member?.roles?.cache?.filter(role => role.id !== interaction.guild?.id).map(role => role.name).join(', ') || 'None';
+        await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Your Aera Discord Profile').addFields(
+          { name: 'User', value: `${interaction.user.tag}`, inline: true },
+          { name: 'User ID', value: interaction.user.id, inline: true },
+          { name: 'Roles', value: roles.slice(0, 1000), inline: false },
+          { name: 'Aera Moderator', value: configuredModerator || !!interaction.memberPermissions?.has(PermissionFlagsBits.ModerateMembers) ? 'Yes' : 'No', inline: true },
+          { name: 'Aera Administrator', value: configuredAdministrator || !!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator) ? 'Yes' : 'No', inline: true },
+          { name: 'Discord Permissions', value: permissions.length ? permissions.join(', ').slice(0, 1000) : 'None', inline: false }
+        ).setTimestamp()] });
         break;
       }
       case 'player': {
@@ -131,6 +176,16 @@ client.on(Events.InteractionCreate, async interaction => {
         break;
       }
       case 'ping': await interaction.reply(`Pong! **${client.ws.ping}ms**`); break;
+      case 'help': {
+        await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Bot Commands').setDescription([
+          '**Server:** `/server` `/players` `/servers` `/serverinfo`',
+          '**Player:** `/player` `/whoami`',
+          '**Bot:** `/ping` `/uptime` `/help`',
+          '**Moderation:** `/kick` `/ban` `/unban` `/timeout` `/clear`',
+          '**Administration:** `/announce` `/botstatus`'
+        ].join('\n')).setTimestamp()] });
+        break;
+      }
       case 'announce': {
         if (!(await requireAdministrator(interaction))) break;
         const message = interaction.options.getString('message', true);
@@ -175,12 +230,9 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Discord Bot').addFields(
           { name: 'Discord', value: client.isReady() ? 'Connected' : 'Disconnected', inline: true },
           { name: 'Latency', value: `${client.ws.ping}ms`, inline: true },
-          { name: 'Guilds', value: String(client.guilds.cache.size), inline: true }
+          { name: 'Guilds', value: String(client.guilds.cache.size), inline: true },
+          { name: 'Uptime', value: formatUptime(Date.now() - botStartedAt), inline: true }
         ).setTimestamp()] });
-        break;
-      }
-      case 'help': {
-        await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Bot Commands').setDescription('Use `/server`, `/players`, `/servers`, `/player`, `/ping`, moderation commands, and administrator commands.').setTimestamp()] });
         break;
       }
       default: break;
