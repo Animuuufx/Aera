@@ -31,21 +31,21 @@ date_default_timezone_set((string) Config::get('app.timezone', 'America/Chicago'
 Session::start();
 
 $request = Request::capture();
+$isApi = str_starts_with($request->path(), '/api/');
 
 try {
     if (!Installer::isConfigured() && !in_array($request->path(), ['/setup', '/health'], true)) {
+        if ($isApi) Response::json(['error' => 'Aera is not configured.'], 503);
         Response::redirect('/setup');
     }
 
-    // Centralized control-panel audit trail. The shutdown hook registered here
-    // also records response status/duration when controller helpers exit after
-    // redirects or JSON responses.
     if (Installer::isConfigured()) AdminLogger::begin($request);
 
     $router = new Router();
     (require AERA_WEB_ROOT . '/routes/web.php')($router);
     $router->dispatch($request);
 } catch (HttpException $e) {
+    if ($isApi) Response::json(['error' => $e->getMessage() !== '' ? $e->getMessage() : 'Request failed.'], $e->status());
     http_response_code($e->status());
     View::render('error', ['status' => $e->status(), 'message' => $e->getMessage()]);
 } catch (Throwable $e) {
@@ -53,17 +53,20 @@ try {
     $errorRef = strtoupper(substr(hash('sha256', get_class($e).'|'.$e->getMessage().'|'.date('Y-m-d-H')), 0, 10));
     $dbProblem = $e instanceof PDOException || stripos($e->getMessage(), 'database') !== false || stripos($e->getMessage(), 'SQLSTATE') !== false || stripos($e->getMessage(), 'MySQL') !== false;
 
-    // A SQL/query error is not the same thing as a dead database connection.
-    // Older builds redirected every PDO exception from /admin to setup, which
-    // made individual table problems (for example /admin/data/items) look like
-    // the whole installation had lost its configuration. Only redirect when a
-    // fresh ping proves MySQL itself is actually unreachable.
     $dbUnavailable = false;
     if ($dbProblem) {
         try { $dbUnavailable = !Database::ping(); } catch (Throwable) { $dbUnavailable = true; }
     }
     if ($dbUnavailable && str_starts_with($request->path(), '/admin')) {
         Response::redirect('/setup?repair=1');
+    }
+
+    if ($isApi) {
+        Response::json([
+            'error' => 'Aera encountered an internal error.',
+            'errorRef' => $errorRef,
+            'details' => Config::get('app.debug', false) ? $e->getMessage() : null,
+        ], 500);
     }
 
     http_response_code(500);
