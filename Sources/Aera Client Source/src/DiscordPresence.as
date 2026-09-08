@@ -1,6 +1,7 @@
 package
 {
     import com.adobe.serialization.json.JSON;
+    import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.SecurityErrorEvent;
     import flash.events.TimerEvent;
@@ -17,6 +18,7 @@ package
         private static var pendingPlayer:String = "";
         private static var startedAt:Number = 0;
         private static var lastSentPlayer:String = "";
+        private static var lastSentAt:Number = 0;
         private static var pollTimer:Timer;
         private static var watchedGame:Object;
 
@@ -37,6 +39,7 @@ package
             pendingPlayer = "";
             startedAt = 0;
             lastSentPlayer = "";
+            lastSentAt = 0;
             if (pollTimer != null)
             {
                 pollTimer.stop();
@@ -97,9 +100,13 @@ package
                 return;
             }
 
-            if (socket.connected && pendingPlayer.length > 0 && pendingPlayer != lastSentPlayer)
+            if (socket.connected && pendingPlayer.length > 0)
             {
-                sendPresence();
+                var now:Number = new Date().time;
+                if (pendingPlayer != lastSentPlayer || now - lastSentAt >= 10000)
+                {
+                    sendPresence();
+                }
             }
         }
 
@@ -121,6 +128,7 @@ package
                 socket.writeUTFBytes(JSON.encode(payload) + "\n");
                 socket.flush();
                 lastSentPlayer = pendingPlayer;
+                lastSentAt = new Date().time;
             }
             catch (e:Error)
             {
@@ -142,6 +150,7 @@ package
             }
             socket = null;
             lastSentPlayer = "";
+            lastSentAt = 0;
         }
     }
 }
