@@ -24,9 +24,28 @@ final class StoreRewardService
             $pdo->commit();
         }catch(\Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
     }
+    public static function rewardsOwnedByUser(int $userId,int $productId): bool
+    {
+        self::ensureTables();
+        $x=Database::one('SELECT r.id FROM store_product_rewards r LEFT JOIN users_items ui ON r.RewardType="item" AND ui.UserID=? AND ui.ItemID=r.RewardID AND ui.Bank=0 LEFT JOIN users_titles ut ON r.RewardType="title" AND ut.UserID=? AND ut.TitleID=r.RewardID WHERE r.ProductID=? AND ((r.RewardType="item" AND ui.id IS NOT NULL) OR (r.RewardType="title" AND ut.id IS NOT NULL)) LIMIT 1',[$userId,$userId,$productId]);
+        return (bool)$x;
+    }
+    public static function assertPurchasable(int $userId,int $productId): void
+    {
+        if($userId<1||$productId<1)throw new RuntimeException('Invalid store purchase.');
+        if(self::rewardsOwnedByUser($userId,$productId))throw new RuntimeException('You already own a reward from this store product.');
+    }
+    public static function ownedProductIds(int $userId,array $productIds): array
+    {
+        self::ensureTables();$ids=array_values(array_unique(array_filter(array_map('intval',$productIds),fn($v)=>$v>0)));if(!$ids||$userId<1)return [];
+        $ph=implode(',',array_fill(0,count($ids),'?'));
+        $params=array_merge([$userId,$userId],$ids);
+        $rows=Database::all('SELECT DISTINCT r.ProductID FROM store_product_rewards r LEFT JOIN users_items ui ON r.RewardType="item" AND ui.UserID=? AND ui.ItemID=r.RewardID AND ui.Bank=0 LEFT JOIN users_titles ut ON r.RewardType="title" AND ut.UserID=? AND ut.TitleID=r.RewardID WHERE r.ProductID IN ('.$ph.') AND ((r.RewardType="item" AND ui.id IS NOT NULL) OR (r.RewardType="title" AND ut.id IS NOT NULL))', $params);
+        return array_map('intval',array_column($rows,'ProductID'));
+    }
     public static function recordPending(int $userId,int $productId,string $paypalOrderId): void
     {
-        self::ensureTables();if($userId<1||$productId<1||$paypalOrderId==='')throw new RuntimeException('Invalid PayPal order.');
+        self::ensureTables();if($userId<1||$productId<1||$paypalOrderId==='')throw new RuntimeException('Invalid PayPal order.');self::assertPurchasable($userId,$productId);
         $x=Database::one('SELECT UserID,ProductID,Status FROM store_orders WHERE PaymentID=? LIMIT 1',[$paypalOrderId]);
         if($x){if((int)$x['UserID']!==$userId||(int)$x['ProductID']!==$productId)throw new RuntimeException('PayPal order/account mismatch.');return;}
         Database::run('INSERT INTO store_orders (ProductID,UserID,PaymentID,Status) VALUES (?,?,?,"pending")',[$productId,$userId,$paypalOrderId]);
@@ -38,9 +57,11 @@ final class StoreRewardService
         else Database::run('INSERT INTO store_orders (ProductID,UserID,PaymentID,Status) VALUES (?,?,?,"captured")',[$productId,$userId,$paymentId]);
         $rewards=self::rewards($productId);if(!$rewards)throw new RuntimeException('This product has no configured rewards.');
         $pdo=Database::connection();$pdo->beginTransaction();
-        try{foreach($rewards as $r){$rid=(int)$r['RewardID'];$qty=max(1,(int)$r['Quantity']);
-            if($r['RewardType']==='item'){$item=Database::one('SELECT id FROM items WHERE id=? LIMIT 1',[$rid]);if(!$item)throw new RuntimeException('Store reward item #'.$rid.' no longer exists.');$owned=Database::one('SELECT id FROM users_items WHERE UserID=? AND ItemID=? AND Bank=0 LIMIT 1',[$userId,$rid]);if($owned)$pdo->prepare('UPDATE users_items SET Quantity=Quantity+? WHERE id=?')->execute([$qty,(int)$owned['id']]);else $pdo->prepare('INSERT INTO users_items (UserID,ItemID,EnhID,Equipped,Quantity,Bank,DatePurchased) VALUES (?,?,1,0,?,0,NOW())')->execute([$userId,$rid,$qty]);}
-            else{if(!Database::one('SELECT id FROM titles WHERE id=? LIMIT 1',[$rid]))throw new RuntimeException('Store reward title #'.$rid.' no longer exists.');$pdo->prepare('INSERT IGNORE INTO users_titles (UserID,TitleID) VALUES (?,?)')->execute([$userId,$rid]);}}
+        try{
+            foreach($rewards as $r){$rid=(int)$r['RewardID'];$qty=max(1,(int)$r['Quantity']);
+                if($r['RewardType']==='item'){$item=Database::one('SELECT id FROM items WHERE id=? LIMIT 1',[$rid]);if(!$item)throw new RuntimeException('Store reward item #'.$rid.' no longer exists.');$owned=Database::one('SELECT id FROM users_items WHERE UserID=? AND ItemID=? AND Bank=0 LIMIT 1',[$userId,$rid]);if($owned)$pdo->prepare('UPDATE users_items SET Quantity=Quantity+? WHERE id=?')->execute([$qty,(int)$owned['id']]);else $pdo->prepare('INSERT INTO users_items (UserID,ItemID,EnhID,Equipped,Quantity,Bank,DatePurchased) VALUES (?,?,1,0,?,0,NOW())')->execute([$userId,$rid,$qty]);}
+                else{if(!Database::one('SELECT id FROM titles WHERE id=? LIMIT 1',[$rid]))throw new RuntimeException('Store reward title #'.$rid.' no longer exists.');$pdo->prepare('INSERT IGNORE INTO users_titles (UserID,TitleID) VALUES (?,?)')->execute([$userId,$rid]);}
+            }
             $pdo->prepare('UPDATE store_orders SET Status="granted",GrantedAt=NOW() WHERE PaymentID=?')->execute([$paymentId]);$pdo->commit();return true;
         }catch(\Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
     }
