@@ -37,7 +37,7 @@ public dynamic class Main extends MovieClip
 
         private var contexts:Dictionary = new Dictionary();
         private var discordProcess:NativeProcess;
-        private static const DISCORD_APPLICATION_ID:String = "REPLACE_WITH_AERA_DISCORD_APPLICATION_ID";
+        private static const DISCORD_APPLICATION_ID:String = "1546639234113343639";
 
         public function Main()
         {
