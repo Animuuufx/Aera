@@ -50,19 +50,14 @@ if (-not (Test-Path $stalwartExe)) {
     throw "Stalwart executable was not installed at $stalwartExe."
 }
 
-# Stalwart v0.16+ uses a small JSON datastore configuration file. The
-# remaining server/domain/account settings live in the Stalwart datastore and
-# are created by the bootstrap WebUI.
-if (-not (Test-Path $configPath)) {
-    $config = [ordered]@{
-        '@type' = 'RocksDb'
-        'path' = $dataDir.Replace('\','/')
-    }
-    ($config | ConvertTo-Json -Compress) | Set-Content -Path $configPath -Encoding UTF8
-    Write-Host "Created Stalwart RocksDB config at $configPath" -ForegroundColor Green
+# IMPORTANT: The first Stalwart start must not have a config.json present.
+# A missing config.json is what triggers bootstrap mode and prints the
+# one-time temporary administrator credentials.
+if (Test-Path $configPath) {
+    Write-Host "Existing config detected: $configPath" -ForegroundColor Yellow
+    Write-Host 'The installer will not overwrite or delete an existing Stalwart configuration.' -ForegroundColor Yellow
 }
 
-# Stalwart's documented Windows deployment uses NSSM as the service wrapper.
 if (-not (Test-Path $nssmExe)) {
     Write-Host 'NSSM is not installed. Opening the official download page...' -ForegroundColor Yellow
     Start-Process 'https://www.nssm.cc/download'
@@ -100,7 +95,15 @@ if ($existing -and $existing.Status -eq 'Running') {
 Get-Service -Name $serviceName | Format-Table Name,Status,StartType -AutoSize
 
 Write-Host ''
-Write-Host 'Bootstrap WebUI: http://127.0.0.1:8080/admin' -ForegroundColor Cyan
+if (-not (Test-Path $configPath)) {
+    Write-Host 'Bootstrap WebUI: http://127.0.0.1:8080/admin' -ForegroundColor Cyan
+    Write-Host 'Bootstrap admin username: admin' -ForegroundColor Cyan
+    Write-Host 'One-time bootstrap password is in:' -ForegroundColor Cyan
+    Write-Host "  $logDir\stderr.log" -ForegroundColor White
+} else {
+    Write-Host 'Stalwart is already configured; bootstrap credentials will not be generated.' -ForegroundColor Yellow
+    Write-Host 'Use the existing WebUI administrator account.' -ForegroundColor Yellow
+}
 Write-Host 'Setup hostname: mail.nightvaults.com' -ForegroundColor Cyan
 Write-Host 'Default email domain: nightvaults.com' -ForegroundColor Cyan
 Write-Host ''
