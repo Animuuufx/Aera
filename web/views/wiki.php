@@ -9,31 +9,65 @@ $base = '/wiki?type=' . urlencode($type);
 if ($q !== '') $base .= '&q=' . urlencode($q);
 $pages = max(1, (int)ceil($total / 50));
 $fmt = static fn($v) => number_format((int)$v);
-$money = static function ($row) {
-    $v = (int)($row['Cost'] ?? 0);
-    return $v <= 0 ? 'Free' : $v . ' ' . ((int)($row['Coins'] ?? 0) ? 'Coins' : 'Gold');
+
+// Cost is stored in items.Cost. Coins is the database currency flag.
+$money = static function ($row): string {
+    $cost = (int)($row['Cost'] ?? 0);
+    $currency = (int)($row['Coins'] ?? 0) === 1 ? 'Coins' : 'Gold';
+    return number_format($cost) . ' ' . $currency;
 };
 
-$swfUrl = static function (?string $link, ?string $file): ?string {
-    foreach ([$link, $file] as $value) {
-        $value = trim((string)$value);
-        if ($value === '' || !preg_match('/\.swf(?:[?#].*)?$/i', $value)) continue;
-        if (preg_match('#^https?://#i', $value)) return $value;
-        if (str_starts_with($value, '/')) return $value;
-        return '/gamefiles/' . ltrim($value, '/');
+// Resolve database SWF paths to the public /gamefiles tree without exposing
+// the internal File/Link/Linkage values in the wiki UI.
+$swfCandidates = static function (?string $file, string $type): array {
+    $file = trim(str_replace('\\', '/', (string)$file));
+    if ($file === '' || !preg_match('/\.swf(?:[?#].*)?$/i', $file)) return [];
+
+    if (preg_match('#^https?://#i', $file)) return [$file];
+
+    $path = '/' . ltrim($file, '/');
+    $out = [];
+
+    // Database entries may already include their gamefiles subdirectory.
+    if (str_starts_with($path, '/gamefiles/')) {
+        $out[] = $path;
+    } else {
+        // Normal game asset folders.
+        $out[] = '/gamefiles' . $path;
+
+        if ($type === 'items') {
+            // Class items historically store only the SWF basename, while the
+            // actual public files live in classes/M and classes/F.
+            $baseName = basename(parse_url($path, PHP_URL_PATH) ?: $path);
+            if ($baseName !== '') {
+                $out[] = '/gamefiles/classes/M/' . rawurlencode($baseName);
+                $out[] = '/gamefiles/classes/F/' . rawurlencode($baseName);
+            }
+        } elseif ($type === 'maps') {
+            $baseName = basename(parse_url($path, PHP_URL_PATH) ?: $path);
+            if ($baseName !== '') $out[] = '/gamefiles/maps/' . rawurlencode($baseName);
+        } elseif ($type === 'monsters') {
+            $baseName = basename(parse_url($path, PHP_URL_PATH) ?: $path);
+            if ($baseName !== '') $out[] = '/gamefiles/mon/' . rawurlencode($baseName);
+        }
+
+        // Fallback for files uploaded directly into /gamefiles.
+        $baseName = basename(parse_url($path, PHP_URL_PATH) ?: $path);
+        if ($baseName !== '') $out[] = '/gamefiles/' . rawurlencode($baseName);
     }
-    return null;
+
+    return array_values(array_unique($out));
 };
 
-$previewUrl = null;
+$previewCandidates = [];
 if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
-    $previewUrl = $swfUrl($detail['Link'] ?? null, $detail['File'] ?? null);
+    $previewCandidates = $swfCandidates($detail['File'] ?? null, $type);
 }
 ?>
 <style>
 .wk{max-width:1220px;margin:auto;padding:26px 0 60px}.wk-hero{padding:30px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(135deg,rgba(205,164,76,.15),rgba(255,255,255,.025));margin-bottom:18px}.wk-k{color:#cda44c;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}.wk h1{margin:6px 0;font-size:38px}.wk p{color:rgba(255,255,255,.68);line-height:1.65}.wk-nav,.wk-search,.wk-card,.wk-detail,.wk-table{border:1px solid rgba(255,255,255,.08);background:rgba(12,15,20,.62);border-radius:14px}.wk-nav{display:flex;gap:8px;padding:8px;flex-wrap:wrap}.wk-nav a{padding:10px 14px;border-radius:10px;color:rgba(255,255,255,.7);text-decoration:none}.wk-nav a.active,.wk-nav a:hover{background:rgba(205,164,76,.12);color:#fff}.wk-search{padding:13px 15px;width:100%;box-sizing:border-box;color:#fff;margin:14px 0;background:rgba(255,255,255,.025)}.wk-search::placeholder{color:rgba(255,255,255,.35)}
 .wk-list{overflow:auto}.wk-table{width:100%;border-collapse:collapse}.wk-table th,.wk-table td{padding:12px 13px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}.wk-table th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.42)}.wk-table td{color:rgba(255,255,255,.72)}.wk-table a{color:#e5c36b;text-decoration:none}.wk-desc{max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wk-pager{display:flex;justify-content:space-between;gap:12px;margin-top:14px}.wk-btn{display:inline-block;padding:10px 14px;border-radius:9px;background:rgba(255,255,255,.05);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.06);cursor:pointer}.wk-btn:hover{background:rgba(255,255,255,.08)}
-.wk-tabs{display:flex;gap:6px;margin-bottom:12px}.wk-tab{appearance:none;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:rgba(255,255,255,.68);padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}.wk-tab.active{background:rgba(205,164,76,.14);color:#fff;border-color:rgba(205,164,76,.35)}.wk-panel{display:none}.wk-panel.active{display:block}.wk-preview{min-height:520px;background:#090b0f;border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center}.wk-preview ruffle-player{width:100%;height:560px;display:block}.wk-preview-empty{padding:44px;text-align:center;color:rgba(255,255,255,.46)}
+.wk-tabs{display:flex;gap:6px;margin-bottom:12px}.wk-tab{appearance:none;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:rgba(255,255,255,.68);padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}.wk-tab.active{background:rgba(205,164,76,.14);color:#fff;border-color:rgba(205,164,76,.35)}.wk-panel{display:none}.wk-panel.active{display:block}.wk-preview{min-height:520px;background:#090b0f;border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center}.wk-preview ruffle-player{width:100%;height:560px;display:block}.wk-preview-empty{padding:44px;text-align:center;color:rgba(255,255,255,.46);max-width:720px}.wk-preview-error{color:#ffb6a4}.wk-preview-loading{color:rgba(255,255,255,.68)}
 .wk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.wk-detail{padding:24px}.wk-detail h2{margin:0 0 5px}.wk-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:18px 0}.wk-stat{padding:12px;border-radius:10px;background:rgba(255,255,255,.035)}.wk-stat b{display:block;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}.wk-stat span{color:#fff}.wk-section{margin-top:18px}.wk-section h3{margin:0 0 10px}.wk-note{padding:12px;border-left:3px solid #cda44c;background:rgba(205,164,76,.07);border-radius:7px;margin-top:14px;color:rgba(255,255,255,.7)}.wk-empty{padding:18px;text-align:center;color:rgba(255,255,255,.45)}
 @media(max-width:850px){.wk-grid{grid-template-columns:1fr}.wk-meta{grid-template-columns:repeat(2,1fr)}.wk h1{font-size:32px}.wk-preview{min-height:360px}.wk-preview ruffle-player{height:400px}}
 </style>
@@ -46,9 +80,8 @@ if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
 
  <?php if ($detail): ?>
    <div style="margin:14px 0"><a class="wk-btn" href="<?= $base ?>">← Back to <?= e($label) ?></a></div>
-
    <section class="wk-detail">
-    <?php if ($previewUrl): ?>
+    <?php if ($previewCandidates): ?>
       <div class="wk-tabs" role="tablist" aria-label="Wiki entry views">
         <button class="wk-tab active" type="button" data-wk-tab="details">Details</button>
         <button class="wk-tab" type="button" data-wk-tab="preview">SWF Preview</button>
@@ -58,7 +91,7 @@ if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
 
     <?php if ($type === 'items'): ?>
       <div class="wk-meta">
-       <?php foreach ([['ID','id'],['Type','Type'],['Equipment','Equipment'],['Level','Level'],['Rarity','Rarity'],['Price','Cost'],['Stack','Stack'],['DPS','DPS']] as [$k,$f]): ?><div class="wk-stat"><b><?= $k ?></b><span><?= $k === 'Price' ? e($money($detail)) : e($detail[$f] ?? '0') ?></span></div><?php endforeach; ?>
+       <?php foreach ([['ID','id'],['Type','Type'],['Level','Level'],['Rarity','Rarity'],['Cost','Cost'],['Stack','Stack'],['DPS','DPS']] as [$k,$f]): ?><div class="wk-stat"><b><?= $k ?></b><span><?= $k === 'Cost' ? e($money($detail)) : e($detail[$f] ?? '0') ?></span></div><?php endforeach; ?>
       </div>
       <p><?= nl2br(e($detail['Description'] ?? '')) ?></p>
       <div class="wk-grid">
@@ -86,11 +119,11 @@ if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
       <div class="wk-card"><h3>Where to start</h3><?php if ($related['sourceNpc'] ?? []): ?><ul><?php foreach ($related['sourceNpc'] as $x): ?><li><?= e($x['Name']) ?> in <a href="/wiki?type=maps&id=<?= $x['MapID'] ?>"><?= e($x['MapName']) ?></a></li><?php endforeach; ?></ul><?php else: ?><p>No quest-giver location is linked in the current NPC button data.</p><?php endif; ?></div>
     <?php endif; ?>
 
-    <?php if ($previewUrl): ?>
+    <?php if ($previewCandidates): ?>
       </div>
       <div class="wk-panel" data-wk-panel="preview">
-        <div class="wk-preview" data-wk-preview data-swf-url="<?= e($previewUrl) ?>">
-          <div class="wk-preview-empty">Click the SWF Preview tab to load this asset with Ruffle.</div>
+        <div class="wk-preview" data-wk-preview data-swf-candidates="<?= e(json_encode($previewCandidates, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)) ?>">
+          <div class="wk-preview-empty wk-preview-loading">Click the SWF Preview tab to load this asset with Ruffle.</div>
         </div>
       </div>
     <?php endif; ?>
@@ -98,10 +131,10 @@ if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
 
  <?php else: ?>
    <form method="get"><input type="hidden" name="type" value="<?= e($type) ?>"><input class="wk-search" type="search" name="q" value="<?= e($q) ?>" placeholder="Search <?= strtolower($label) ?> by name…"></form>
-   <section class="wk-list"><table class="wk-table"><thead><tr><?php if ($type === 'items'): ?><th>Name</th><th>Type</th><th>Equipment</th><th>Level</th><th>Cost</th><th>Description</th><?php elseif ($type === 'maps'): ?><th>Name</th><th>Level</th><th>Players</th><th>PvP</th><?php elseif ($type === 'monsters'): ?><th>Name</th><th>Level</th><th>Health</th><th>Gold</th><th>EXP</th><th>DPS</th><?php else: ?><th>Name</th><th>Level</th><th>EXP</th><th>Gold</th><th>Coins</th><th>Description</th><?php endif; ?></tr></thead><tbody>
+   <section class="wk-list"><table class="wk-table"><thead><tr><?php if ($type === 'items'): ?><th>Name</th><th>Type</th><th>Level</th><th>Cost</th><th>Description</th><?php elseif ($type === 'maps'): ?><th>Name</th><th>Level</th><th>Players</th><th>PvP</th><?php elseif ($type === 'monsters'): ?><th>Name</th><th>Level</th><th>Health</th><th>Gold</th><th>EXP</th><th>DPS</th><?php else: ?><th>Name</th><th>Level</th><th>EXP</th><th>Gold</th><th>Coins</th><th>Description</th><?php endif; ?></tr></thead><tbody>
    <?php if (!$rows): ?><tr><td colspan="6" class="wk-empty">No entries found.</td></tr><?php endif; ?>
    <?php foreach ($rows as $x): ?><tr>
-    <?php if ($type === 'items'): ?><td><a href="/wiki?type=items&id=<?= $x['id'] ?>"><?= e($x['Name']) ?></a></td><td><?= e($x['Type']) ?></td><td><?= e($x['Equipment']) ?></td><td><?= $fmt($x['Level']) ?></td><td><?= e($money($x)) ?></td><td class="wk-desc"><?= e($x['Description']) ?></td>
+    <?php if ($type === 'items'): ?><td><a href="/wiki?type=items&id=<?= $x['id'] ?>"><?= e($x['Name']) ?></a></td><td><?= e($x['Type']) ?></td><td><?= $fmt($x['Level']) ?></td><td><?= e($money($x)) ?></td><td class="wk-desc"><?= e($x['Description']) ?></td>
     <?php elseif ($type === 'maps'): ?><td><a href="/wiki?type=maps&id=<?= $x['id'] ?>"><?= e($x['Name']) ?></a></td><td><?= $fmt($x['ReqLevel']) ?></td><td><?= $fmt($x['MaxPlayers']) ?></td><td><?= ((int)$x['PvP']) ? 'Yes' : 'No' ?></td>
     <?php elseif ($type === 'monsters'): ?><td><a href="/wiki?type=monsters&id=<?= $x['id'] ?>"><?= e($x['Name']) ?></a></td><td><?= $fmt($x['Level']) ?></td><td><?= $fmt($x['Health']) ?></td><td><?= $fmt($x['Gold']) ?></td><td><?= $fmt($x['Experience']) ?></td><td><?= $fmt($x['DPS']) ?></td>
     <?php else: ?><td><a href="/wiki?type=quests&id=<?= $x['id'] ?>"><?= e($x['Name']) ?></a></td><td><?= $fmt($x['Level']) ?></td><td><?= $fmt($x['Experience']) ?></td><td><?= $fmt($x['Gold']) ?></td><td><?= $fmt($x['Coins']) ?></td><td class="wk-desc"><?= e($x['Description']) ?></td><?php endif; ?>
@@ -110,7 +143,7 @@ if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
  <?php endif; ?>
 </div>
 
-<?php if ($previewUrl): ?>
+<?php if ($previewCandidates): ?>
 <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 <script>
 (function () {
@@ -126,31 +159,45 @@ if ($detail && in_array($type, ['items', 'maps', 'monsters'], true)) {
     if (name !== 'preview' || loaded || !preview) return;
     loaded = true;
 
-    try {
-      const ruffleFactory = window.RufflePlayer && window.RufflePlayer.newest();
-      if (!ruffleFactory) throw new Error('Ruffle failed to initialize.');
+    let candidates = [];
+    try { candidates = JSON.parse(preview.dataset.swfCandidates || '[]'); } catch (_) {}
+    if (!candidates.length) {
+      preview.innerHTML = '<div class="wk-preview-empty wk-preview-error">No SWF preview is available for this entry.</div>';
+      return;
+    }
 
-      const player = ruffleFactory.createPlayer();
-      player.style.width = '100%';
-      player.style.height = '560px';
+    const factory = window.RufflePlayer && window.RufflePlayer.newest();
+    if (!factory) {
+      preview.innerHTML = '<div class="wk-preview-empty wk-preview-error">Ruffle could not initialize on this page.</div>';
+      return;
+    }
+
+    const tryCandidate = function (index) {
+      if (index >= candidates.length) {
+        preview.innerHTML = '<div class="wk-preview-empty wk-preview-error"><b>SWF preview unavailable.</b><br>The database asset was not found at the available gamefile paths.</div>';
+        return;
+      }
+
       preview.innerHTML = '';
+      const player = factory.createPlayer();
+      player.style.width = '100%';
+      player.style.height = window.innerWidth <= 850 ? '400px' : '560px';
       preview.appendChild(player);
 
       player.ruffle().load({
-        url: preview.dataset.swfUrl,
+        url: candidates[index],
         allowScriptAccess: false,
         showSwfDownload: false,
         contextMenu: true,
         splashScreen: true,
         preloader: true
       }).catch(function (error) {
-        preview.innerHTML = '<div class="wk-preview-empty">Ruffle could not load this SWF preview.</div>';
-        console.error('[Aera Wiki] Ruffle load failed:', error);
+        console.warn('[Aera Wiki] Ruffle failed to load candidate:', candidates[index], error);
+        tryCandidate(index + 1);
       });
-    } catch (error) {
-      preview.innerHTML = '<div class="wk-preview-empty">Ruffle could not initialize this SWF preview.</div>';
-      console.error('[Aera Wiki] Ruffle initialization failed:', error);
-    }
+    };
+
+    tryCandidate(0);
   }
 
   tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.wkTab)));
