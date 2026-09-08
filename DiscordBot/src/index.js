@@ -182,7 +182,8 @@ client.on(Events.InteractionCreate, async interaction => {
           '**Player:** `/player` `/whoami`',
           '**Bot:** `/ping` `/uptime` `/help`',
           '**Moderation:** `/kick` `/ban` `/unban` `/timeout` `/clear`',
-          '**Administration:** `/announce` `/botstatus`'
+          '**Administration:** `/announce` `/botstatus`',
+          '**Emulator (Admin):** `/start` `/stop` `/restart` `/emulatorstatus`'
         ].join('\n')).setTimestamp()] });
         break;
       }
@@ -240,6 +241,106 @@ client.on(Events.InteractionCreate, async interaction => {
   } catch (error) {
     console.error(`[Aera Discord] Command ${interaction.commandName} failed:`, error);
     const message = error?.code === 'ER_NO_SUCH_TABLE' ? 'The required Aera database table is unavailable.' : 'The command could not be completed.';
+    if (interaction.replied || interaction.deferred) await interaction.followUp({ content: message, ephemeral: true }).catch(() => {});
+    else await interaction.reply({ content: message, ephemeral: true }).catch(() => {});
+  }
+});
+
+const emulatorControlConfig = env('EMULATOR_CONTROL_ROOT');
+const emulatorControlRoot = emulatorControlConfig
+  ? path.resolve(emulatorControlConfig)
+  : path.resolve(__dirname, '..', '..', 'Emulator', 'PHP', 'runtime', 'control');
+const emulatorRequestsDir = path.join(emulatorControlRoot, 'requests');
+const emulatorResponsesDir = path.join(emulatorControlRoot, 'responses');
+const emulatorStatusFile = path.join(emulatorControlRoot, 'status.json');
+
+function ensureEmulatorControlDirectories() {
+  fs.mkdirSync(emulatorRequestsDir, { recursive: true });
+  fs.mkdirSync(emulatorResponsesDir, { recursive: true });
+}
+
+function readEmulatorStatus() {
+  try {
+    if (!fs.existsSync(emulatorStatusFile)) return null;
+    return JSON.parse(fs.readFileSync(emulatorStatusFile, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function emulatorStatusText(status) {
+  if (!status) return 'Supervisor status unavailable. Run `INSTALL_PHP_EMULATOR_CONTROL.bat` as Administrator first.';
+  const running = status.running ? 'Running' : 'Stopped';
+  const desired = status.desired || 'unknown';
+  const watchdog = status.watchdogRunning ? 'Running' : 'Stopped';
+  const pid = status.emulatorPid ? String(status.emulatorPid) : 'None';
+  const lastAction = status.lastAction || 'None';
+  return `**Emulator:** ${running}\n**Desired:** ${desired}\n**Watchdog:** ${watchdog}\n**PID:** ${pid}\n**Last Action:** ${lastAction}`;
+}
+
+function queueEmulatorAction(action) {
+  ensureEmulatorControlDirectories();
+  const id = crypto.randomUUID().replace(/-/g, '');
+  const requestPath = path.join(emulatorRequestsDir, `${id}.json`);
+  const responsePath = path.join(emulatorResponsesDir, `${id}.json`);
+  const payload = JSON.stringify({ id, action, requestedAt: new Date().toISOString() });
+  fs.writeFileSync(requestPath, payload, 'utf8');
+
+  return new Promise((resolve, reject) => {
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      try {
+        if (fs.existsSync(responsePath)) {
+          const response = JSON.parse(fs.readFileSync(responsePath, 'utf8'));
+          clearInterval(timer);
+          fs.rmSync(responsePath, { force: true });
+          resolve(response);
+          return;
+        }
+      } catch (error) {
+        clearInterval(timer);
+        reject(error);
+        return;
+      }
+
+      if (Date.now() - startedAt >= 10000) {
+        clearInterval(timer);
+        reject(new Error('Timed out waiting for the Aera emulator supervisor.'));
+      }
+    }, 250);
+    timer.unref();
+  });
+}
+
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+  if (!['start', 'stop', 'restart', 'emulatorstatus'].includes(interaction.commandName)) return;
+
+  try {
+    if (!(await requireAdministrator(interaction))) return;
+
+    if (interaction.commandName === 'emulatorstatus') {
+      const status = readEmulatorStatus();
+      await interaction.reply({ embeds: [new EmbedBuilder()
+        .setTitle('Aera Emulator Status')
+        .setDescription(emulatorStatusText(status))
+        .setTimestamp()] , ephemeral: true });
+      return;
+    }
+
+    const action = interaction.commandName;
+    const response = await queueEmulatorAction(action);
+    const status = readEmulatorStatus();
+    const description = response?.message || `${action} request processed.`;
+    await interaction.reply({ embeds: [new EmbedBuilder()
+      .setTitle(`Aera Emulator — ${action}`)
+      .setDescription(`${description}\n\n${emulatorStatusText(status)}`)
+      .setTimestamp()], ephemeral: true });
+  } catch (error) {
+    console.error(`[Aera Discord] Emulator command ${interaction.commandName} failed:`, error);
+    const message = error?.message?.includes('Timed out')
+      ? 'The emulator supervisor did not respond. Make sure `AeraPHPEmulatorSupervisor` is installed and running.'
+      : 'The emulator command could not be completed.';
     if (interaction.replied || interaction.deferred) await interaction.followUp({ content: message, ephemeral: true }).catch(() => {});
     else await interaction.reply({ content: message, ephemeral: true }).catch(() => {});
   }
