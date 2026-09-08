@@ -13,9 +13,8 @@ spl_autoload_register(static function (string $class): void {
             throw new \RuntimeException('Unable to load ExtensionRouter.php');
         }
 
-        // Keep the large router source untouched while injecting the small
-        // server-side staff command at load time. This also avoids maintaining
-        // a second command implementation in a separate file.
+        // Keep the main router source untouched while injecting this small
+        // staff command when the class is loaded.
         $needle = "            if(\$cmd==='help'){";
         $dropAll = <<<'PHP'
             if($cmd==='dropall'){
@@ -35,9 +34,14 @@ spl_autoload_register(static function (string $class): void {
                 $this->server->sendRaw($u,['server',$message]);return;
             }
 PHP;
-        if (str_contains($code, "if(\$cmd==='dropall')") === false && str_contains($code, $needle)) {
+        if (!str_contains($code, "if(\$cmd==='dropall')") && str_contains($code, $needle)) {
             $code = str_replace($needle, $dropAll.$needle, $code, 1);
-            $code = str_replace('/giveitem (item id) (player name) [quantity]', '/giveitem (item id) (player name) [quantity]','/dropall (item id) (amount)', $code, 1);
+            $code = str_replace(
+                '/giveitem (item id) (player name) [quantity]',
+                '/giveitem (item id) (player name) [quantity] /dropall (item id) (amount)',
+                $code,
+                1
+            );
         }
 
         $code = preg_replace('/^<\?php\s*/', '', $code, 1) ?? $code;
