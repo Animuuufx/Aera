@@ -20,9 +20,13 @@ final class PayPalService
         curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>$post,CURLOPT_USERPWD=>$id.':'.$secret,CURLOPT_HTTPAUTH=>CURLAUTH_BASIC,CURLOPT_HTTPHEADER=>['Content-Type: application/x-www-form-urlencoded','Accept: application/json'],CURLOPT_TIMEOUT=>30]);
         $raw=(string)curl_exec($ch);$err=curl_error($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);curl_close($ch);$data=json_decode($raw,true);
         if($err!=='')throw new RuntimeException('Unable to connect to PayPal: '.$err);
-        if(!is_array($data)||$code<200||$code>=300||empty($data['access_token']))throw new RuntimeException('PayPal authentication failed (HTTP '.$code.'). Check that the Client ID and Client Secret are from the same '.self::mode().' PayPal app.');
+        if(!is_array($data)||$code<200||$code>=300||empty($data['access_token'])){
+            $detail=is_array($data)?(string)($data['error_description']??$data['message']??'Authentication rejected.'):'Authentication rejected.';
+            throw new RuntimeException('PayPal authentication failed (HTTP '.$code.'): '.$detail);
+        }
         return (string)$data['access_token'];
     }
+    public static function testConnection(): array { $token=self::token(false); return ['ok'=>true,'mode'=>self::mode(),'message'=>'PayPal credentials authenticated successfully.','tokenType'=>'Bearer','hasToken'=>$token!== '']; }
     public static function browserClientToken(): string { return self::token(true); }
     private static function accessToken(): string { return self::token(false); }
     private static function request(string $method,string $url,string $token,array $body=[]): array
