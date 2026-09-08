@@ -1,75 +1,91 @@
 package
 {
-    import com.adobe.serialization.json.JSON;
-    import flash.events.Event;
-    import flash.events.IOErrorEvent;
-    import flash.events.SecurityErrorEvent;
+    import fi.joniaromaa.adobeair.discordrpc.DiscordRpc;
     import flash.events.TimerEvent;
-    import flash.net.Socket;
     import flash.utils.Timer;
 
     /**
-     * Small localhost bridge used by the Aera AIR launcher to publish the
-     * current character, room, and session start time to Discord.
+     * Aera Rich Presence backed directly by the Adobe AIR Discord RPC ANE.
+     * No PowerShell process or localhost bridge is required.
      */
     public class DiscordPresence
     {
-        private static var socket:Socket;
-        private static var pendingPlayer:String = "";
-        private static var pendingRoom:String = "";
-        private static var startedAt:Number = 0;
-        private static var lastSentPlayer:String = "";
-        private static var lastSentRoom:String = "";
-        private static var lastSentAt:Number = 0;
+        private static const APPLICATION_ID:String = "1546639234113343639";
+
+        private static var rpc:DiscordRpc;
         private static var pollTimer:Timer;
         private static var watchedGame:Object;
+        private static var startedAt:uint = 0;
+        private static var lastPlayer:String = "";
+        private static var lastRoom:String = "";
+        private static var active:Boolean = false;
 
         public static function watchGame(game:Object):void
         {
             watchedGame = game;
+
+            if (rpc == null)
+            {
+                try
+                {
+                    rpc = new DiscordRpc();
+                    if (rpc.isSupported)
+                    {
+                        rpc.init(APPLICATION_ID);
+                        active = true;
+                    }
+                }
+                catch (e:Error)
+                {
+                    active = false;
+                    rpc = null;
+                }
+            }
+
             if (pollTimer == null)
             {
                 pollTimer = new Timer(2000);
                 pollTimer.addEventListener(TimerEvent.TIMER, onPoll);
                 pollTimer.start();
             }
+
             onPoll(null);
         }
 
         public static function clear():void
         {
-            pendingPlayer = "";
-            pendingRoom = "";
-            startedAt = 0;
-            lastSentPlayer = "";
-            lastSentRoom = "";
-            lastSentAt = 0;
             if (pollTimer != null)
             {
                 pollTimer.stop();
                 pollTimer.removeEventListener(TimerEvent.TIMER, onPoll);
                 pollTimer = null;
             }
-            if (socket != null)
+
+            if (rpc != null && active)
             {
                 try
                 {
-                    if (socket.connected) socket.close();
+                    rpc.updatePresence("", "", 0, 0, "", "", "", "", "", 0, 0, "", "");
                 }
                 catch (e:Error)
                 {
                 }
-                socket = null;
             }
+
             watchedGame = null;
+            startedAt = 0;
+            lastPlayer = "";
+            lastRoom = "";
         }
 
         private static function onPoll(event:TimerEvent):void
         {
-            if (watchedGame == null) return;
+            if (!active || rpc == null || watchedGame == null) return;
+
             try
             {
                 if (watchedGame.world == null || watchedGame.world.myAvatar == null) return;
+
                 var data:Object = watchedGame.world.myAvatar.objData;
                 if (data == null || !("strUsername" in data)) return;
 
@@ -87,90 +103,38 @@ package
                 }
                 if (room.length == 0) room = "Aera";
 
-                if (startedAt <= 0) startedAt = Math.floor(new Date().time / 1000);
-                pendingPlayer = player;
-                pendingRoom = room;
-                connectAndSend();
+                if (startedAt == 0)
+                {
+                    startedAt = uint(Math.floor(new Date().time / 1000));
+                }
+
+                if (player != lastPlayer || room != lastRoom)
+                {
+                    lastPlayer = player;
+                    lastRoom = room;
+                    rpc.updatePresence(
+                        "Room: " + room,
+                        "Playing as " + player,
+                        startedAt,
+                        0,
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        0,
+                        0,
+                        "",
+                        ""
+                    );
+                }
+
+                rpc.runCallbacks();
             }
             catch (e:Error)
             {
-                // Discord is optional; never allow a presence failure to break the game.
+                // Rich Presence is optional and must never interrupt gameplay.
             }
-        }
-
-        private static function connectAndSend():void
-        {
-            if (socket == null)
-            {
-                socket = new Socket();
-                socket.addEventListener(Event.CONNECT, onConnect);
-                socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
-                socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSocketError);
-                try
-                {
-                    socket.connect("127.0.0.1", 6463);
-                }
-                catch (e:Error)
-                {
-                    socket = null;
-                }
-                return;
-            }
-
-            if (socket.connected && pendingPlayer.length > 0)
-            {
-                var now:Number = new Date().time;
-                if (pendingPlayer != lastSentPlayer || pendingRoom != lastSentRoom || now - lastSentAt >= 10000)
-                {
-                    sendPresence();
-                }
-            }
-        }
-
-        private static function onConnect(event:Event):void
-        {
-            sendPresence();
-        }
-
-        private static function sendPresence():void
-        {
-            if (socket == null || !socket.connected || pendingPlayer.length == 0) return;
-            var payload:Object = {
-                type: "presence",
-                player: pendingPlayer,
-                room: pendingRoom,
-                start: startedAt
-            };
-            try
-            {
-                socket.writeUTFBytes(JSON.encode(payload) + "\n");
-                socket.flush();
-                lastSentPlayer = pendingPlayer;
-                lastSentRoom = pendingRoom;
-                lastSentAt = new Date().time;
-            }
-            catch (e:Error)
-            {
-                onSocketError(null);
-            }
-        }
-
-        private static function onSocketError(event:*) : void
-        {
-            if (socket != null)
-            {
-                try
-                {
-                    socket.close();
-                }
-                catch (e:Error)
-                {
-                }
-            }
-            socket = null;
-            lastSentPlayer = "";
-            lastSentRoom = "";
-            lastSentAt = 0;
         }
     }
 }
