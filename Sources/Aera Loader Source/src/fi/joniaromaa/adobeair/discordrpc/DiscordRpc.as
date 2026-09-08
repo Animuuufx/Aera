@@ -18,15 +18,21 @@ package fi.joniaromaa.adobeair.discordrpc
         {
             try
             {
-                var extensionContextClass:Class = getDefinitionByName("flash.external.ExtensionContext") as Class;
+                var extensionContextClass:Object = getDefinitionByName("flash.external.ExtensionContext");
                 if (extensionContextClass == null)
                 {
                     trace("[Aera Discord] ExtensionContext unavailable");
                     return;
                 }
 
-                extension = extensionContextClass.createExtensionContext("fi.joniaromaa.adobeair.discordrpc", null);
+                // Invoke the static factory dynamically. This keeps the loader source
+                // compatible with Animate's compiler while still using the AIR ANE.
+                extension = extensionContextClass["createExtensionContext"](
+                    "fi.joniaromaa.adobeair.discordrpc",
+                    null
+                );
                 initialized = (extension != null);
+                trace("[Aera Discord] ANE supported=" + initialized);
             }
             catch (e:Error)
             {
@@ -43,11 +49,14 @@ package fi.joniaromaa.adobeair.discordrpc
 
         public function init(applicationId:String):void
         {
-            if (!isSupported || applicationId == null || applicationId.length == 0) return;
+            if (!isSupported || applicationId == null || applicationId.length == 0)
+                return;
+
             try
             {
                 extension.call("init", applicationId);
                 extension.addEventListener(StatusEvent.STATUS, onStatus, false, 0, true);
+                trace("[Aera Discord] RPC initialized");
             }
             catch (e:Error)
             {
@@ -57,14 +66,32 @@ package fi.joniaromaa.adobeair.discordrpc
 
         private function onStatus(event:StatusEvent):void
         {
+            trace("[Aera Discord] status=" + event.code + " level=" + event.level);
         }
 
         public function updatePresence(state:String, details:String, startTime:uint, endTime:uint, largeImage:String, largeImageDesc:String, smallImage:String, smallImageDesc:String, partyId:String, partySize:int, partyMax:int, joinSecret:String, specSecret:String):void
         {
             if (!isSupported) return;
+
             try
             {
-                extension.call("updatePresence", state == null ? "" : state, details == null ? "" : details, startTime, endTime, largeImage == null ? "" : largeImage, largeImageDesc == null ? "" : largeImageDesc, smallImage == null ? "" : smallImage, smallImageDesc == null ? "" : smallImageDesc, partyId == null ? "" : partyId, partySize, partyMax, joinSecret == null ? "" : joinSecret, specSecret == null ? "" : specSecret);
+                extension.call(
+                    "updatePresence",
+                    state == null ? "" : state,
+                    details == null ? "" : details,
+                    startTime,
+                    endTime,
+                    largeImage == null ? "" : largeImage,
+                    largeImageDesc == null ? "" : largeImageDesc,
+                    smallImage == null ? "" : smallImage,
+                    smallImageDesc == null ? "" : smallImageDesc,
+                    partyId == null ? "" : partyId,
+                    partySize,
+                    partyMax,
+                    joinSecret == null ? "" : joinSecret,
+                    specSecret == null ? "" : specSecret
+                );
+                trace("[Aera Discord] presence updated");
             }
             catch (e:Error)
             {
