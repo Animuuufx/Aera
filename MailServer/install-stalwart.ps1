@@ -50,18 +50,22 @@ if (-not (Test-Path $stalwartExe)) {
     throw "Stalwart executable was not installed at $stalwartExe."
 }
 
+# Stalwart v0.16 uses a small config.json that points at its data store.
+# Do not invent server/domain settings here; those are created by the setup wizard.
 if (-not (Test-Path $configPath)) {
-    '{"storage":{"data":"C:\\Program Files\\Stalwart\\data"},"server":{"hostname":"mail.nightvaults.com","default-domain":"nightvaults.com"}}' | Set-Content -Path $configPath -Encoding UTF8
-    Write-Host "Created initial config at $configPath" -ForegroundColor Green
+    $config = [ordered]@{
+        'storage.data' = (Join-Path $dataDir 'data').Replace('\','/')
+    }
+    ($config | ConvertTo-Json -Compress) | Set-Content -Path $configPath -Encoding UTF8
+    Write-Host "Created Stalwart datastore config at $configPath" -ForegroundColor Green
 }
 
-# Stalwart's documented Windows deployment uses NSSM as its service wrapper.
-# Download the Windows x64 build used by the upstream Windows guide if needed.
+# Stalwart's documented Windows deployment uses NSSM as the service wrapper.
 if (-not (Test-Path $nssmExe)) {
     Write-Host 'NSSM is not installed. Opening the official download page...' -ForegroundColor Yellow
     Start-Process 'https://www.nssm.cc/download'
     Write-Host ''
-    Write-Host "Download NSSM for Windows x64, extract nssm.exe, and place it here:" -ForegroundColor Yellow
+    Write-Host 'Download the Windows x64 NSSM build and place nssm.exe here:' -ForegroundColor Yellow
     Write-Host "  $nssmExe" -ForegroundColor White
     Read-Host 'Press Enter after nssm.exe has been placed there'
 }
@@ -81,8 +85,6 @@ if (-not $existing) {
 & $nssmExe set $serviceName DisplayName 'Stalwart Mail Server' | Out-Null
 & $nssmExe set $serviceName Description 'NightVaults Stalwart mail server for nightvaults.com' | Out-Null
 & $nssmExe set $serviceName Start SERVICE_AUTO_START | Out-Null
-
-# Make sure the service restarts after an unexpected process exit.
 & $nssmExe set $serviceName AppExit Default Restart | Out-Null
 & $nssmExe set $serviceName AppThrottle 5000 | Out-Null
 
@@ -97,7 +99,7 @@ Get-Service -Name $serviceName | Format-Table Name,Status,StartType -AutoSize
 
 Write-Host ''
 Write-Host 'Bootstrap WebUI: http://127.0.0.1:8080/admin' -ForegroundColor Cyan
-Write-Host 'Public hostname to use in setup: mail.nightvaults.com' -ForegroundColor Cyan
+Write-Host 'Setup hostname: mail.nightvaults.com' -ForegroundColor Cyan
 Write-Host 'Default email domain: nightvaults.com' -ForegroundColor Cyan
 Write-Host ''
 Write-Host 'Complete the first-run wizard, then configure DNS from cloudflare-dns.md.' -ForegroundColor Yellow
