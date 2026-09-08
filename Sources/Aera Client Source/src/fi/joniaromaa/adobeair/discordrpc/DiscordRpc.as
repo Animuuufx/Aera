@@ -2,11 +2,11 @@ package fi.joniaromaa.adobeair.discordrpc
 {
     import flash.events.EventDispatcher;
     import flash.events.StatusEvent;
-    import flash.external.ExtensionContext;
+    import flash.utils.getDefinitionByName;
 
     public class DiscordRpc extends EventDispatcher
     {
-        private var extension:ExtensionContext;
+        private var extension:Object;
         public var initialized:Boolean;
 
         public function DiscordRpc()
@@ -18,25 +18,43 @@ package fi.joniaromaa.adobeair.discordrpc
         {
             try
             {
-                extension = ExtensionContext.createExtensionContext("fi.joniaromaa.adobeair.discordrpc", null);
+                // Resolve ExtensionContext dynamically so the client SWF can compile
+                // without requiring the AIR-only ExtensionContext class at compile time.
+                var extensionContextClass:Class = getDefinitionByName("flash.external.ExtensionContext") as Class;
+                if (extensionContextClass == null)
+                {
+                    initialized = false;
+                    return;
+                }
+
+                extension = extensionContextClass.createExtensionContext("fi.joniaromaa.adobeair.discordrpc", null);
                 initialized = (extension != null);
             }
             catch (e:Error)
             {
                 initialized = false;
+                extension = null;
             }
         }
 
         public function get isSupported():Boolean
         {
-            return initialized;
+            return initialized && extension != null;
         }
 
         public function init(applicationId:String):void
         {
             if (!isSupported || applicationId == null || applicationId.length == 0) return;
-            extension.call("init", applicationId);
-            extension.addEventListener(StatusEvent.STATUS, statusEvent, false, 0, true);
+
+            try
+            {
+                extension.call("init", applicationId);
+                extension.addEventListener(StatusEvent.STATUS, statusEvent, false, 0, true);
+            }
+            catch (e:Error)
+            {
+                initialized = false;
+            }
         }
 
         private function statusEvent(event:StatusEvent):void
@@ -47,34 +65,56 @@ package fi.joniaromaa.adobeair.discordrpc
         public function updatePresence(state:String, details:String, startTime:uint, endTime:uint, largeImage:String, largeImageDesc:String, smallImage:String, smallImageDesc:String, partyId:String, partySize:int, partyMax:int, joinSecret:String, specSecret:String):void
         {
             if (!isSupported) return;
-            extension.call(
-                "updatePresence",
-                state == null ? "" : state,
-                details == null ? "" : details,
-                startTime,
-                endTime,
-                largeImage == null ? "" : largeImage,
-                largeImageDesc == null ? "" : largeImageDesc,
-                smallImage == null ? "" : smallImage,
-                smallImageDesc == null ? "" : smallImageDesc,
-                partyId == null ? "" : partyId,
-                partySize,
-                partyMax,
-                joinSecret == null ? "" : joinSecret,
-                specSecret == null ? "" : specSecret
-            );
+
+            try
+            {
+                extension.call(
+                    "updatePresence",
+                    state == null ? "" : state,
+                    details == null ? "" : details,
+                    startTime,
+                    endTime,
+                    largeImage == null ? "" : largeImage,
+                    largeImageDesc == null ? "" : largeImageDesc,
+                    smallImage == null ? "" : smallImage,
+                    smallImageDesc == null ? "" : smallImageDesc,
+                    partyId == null ? "" : partyId,
+                    partySize,
+                    partyMax,
+                    joinSecret == null ? "" : joinSecret,
+                    specSecret == null ? "" : specSecret
+                );
+            }
+            catch (e:Error)
+            {
+                // Rich Presence must never interrupt gameplay.
+            }
         }
 
         public function runCallbacks():void
         {
             if (!isSupported) return;
-            extension.call("runCallbacks");
+
+            try
+            {
+                extension.call("runCallbacks");
+            }
+            catch (e:Error)
+            {
+            }
         }
 
         public function respond(userId:String, reply:int):void
         {
             if (!isSupported || userId == null) return;
-            extension.call("respond", userId, reply);
+
+            try
+            {
+                extension.call("respond", userId, reply);
+            }
+            catch (e:Error)
+            {
+            }
         }
 
         public function dispose():void
