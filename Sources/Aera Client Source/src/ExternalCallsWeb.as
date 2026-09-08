@@ -26,6 +26,7 @@ package
 
         public function setGameObject(_arg_1:Object):void
         {
+            DiscordPresence.watchGame(rootClass);
             ExternalInterface.call("setGameObject", _arg_1);
         }
 
