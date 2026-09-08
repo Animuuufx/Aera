@@ -1,5 +1,6 @@
 require('dotenv').config();
 const http = require('node:http');
+const net = require('node:net');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -183,7 +184,7 @@ client.on(Events.InteractionCreate, async interaction => {
           '**Bot:** `/ping` `/uptime` `/help`',
           '**Moderation:** `/kick` `/ban` `/unban` `/timeout` `/clear`',
           '**Administration:** `/announce` `/botstatus`',
-          '**Emulator (Admin):** `/start` `/stop` `/restart` `/emulatorstatus`'
+          '**Emulator (Admin):** `/start` `/stop` `/restart` `/emulatorstatus` `/clearall`'
         ].join('\n')).setTimestamp()] });
         break;
       }
@@ -253,21 +254,19 @@ const emulatorControlRoot = emulatorControlConfig
 const emulatorRequestsDir = path.join(emulatorControlRoot, 'requests');
 const emulatorResponsesDir = path.join(emulatorControlRoot, 'responses');
 const emulatorStatusFile = path.join(emulatorControlRoot, 'status.json');
+const emulatorConsoleHost = env('EMULATOR_CONSOLE_HOST') || '127.0.0.1';
+const emulatorConsolePort = envNumber('EMULATOR_CONSOLE_PORT', 5591);
 
 function ensureEmulatorControlDirectories() {
   fs.mkdirSync(emulatorRequestsDir, { recursive: true });
   fs.mkdirSync(emulatorResponsesDir, { recursive: true });
 }
-
 function readEmulatorStatus() {
   try {
     if (!fs.existsSync(emulatorStatusFile)) return null;
     return JSON.parse(fs.readFileSync(emulatorStatusFile, 'utf8'));
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
-
 function emulatorStatusText(status) {
   if (!status) return 'Supervisor status unavailable. Run `INSTALL_PHP_EMULATOR_CONTROL.bat` as Administrator first.';
   const running = status.running ? 'Running' : 'Stopped';
@@ -277,70 +276,82 @@ function emulatorStatusText(status) {
   const lastAction = status.lastAction || 'None';
   return `**Emulator:** ${running}\n**Desired:** ${desired}\n**Watchdog:** ${watchdog}\n**PID:** ${pid}\n**Last Action:** ${lastAction}`;
 }
-
 function queueEmulatorAction(action) {
   ensureEmulatorControlDirectories();
   const id = crypto.randomUUID().replace(/-/g, '');
   const requestPath = path.join(emulatorRequestsDir, `${id}.json`);
   const responsePath = path.join(emulatorResponsesDir, `${id}.json`);
-  const payload = JSON.stringify({ id, action, requestedAt: new Date().toISOString() });
-  fs.writeFileSync(requestPath, payload, 'utf8');
-
+  fs.writeFileSync(requestPath, JSON.stringify({ id, action, requestedAt: new Date().toISOString() }), 'utf8');
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
     const timer = setInterval(() => {
       try {
         if (fs.existsSync(responsePath)) {
           const response = JSON.parse(fs.readFileSync(responsePath, 'utf8'));
-          clearInterval(timer);
-          fs.rmSync(responsePath, { force: true });
-          resolve(response);
-          return;
+          clearInterval(timer); fs.rmSync(responsePath, { force: true }); resolve(response); return;
         }
-      } catch (error) {
-        clearInterval(timer);
-        reject(error);
-        return;
-      }
-
-      if (Date.now() - startedAt >= 10000) {
-        clearInterval(timer);
-        reject(new Error('Timed out waiting for the Aera emulator supervisor.'));
-      }
+      } catch (error) { clearInterval(timer); reject(error); return; }
+      if (Date.now() - startedAt >= 10000) { clearInterval(timer); reject(new Error('Timed out waiting for the Aera emulator supervisor.')); }
     }, 250);
     timer.unref();
+  });
+}
+function sendEmulatorConsoleCommand(command) {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host: emulatorConsoleHost, port: emulatorConsolePort });
+    let buffer = '';
+    let settled = false;
+    const timeout = setTimeout(() => {
+      socket.destroy();
+      if (!settled) { settled = true; reject(new Error(`Timed out connecting to emulator console ${emulatorConsoleHost}:${emulatorConsolePort}.`)); }
+    }, 5000);
+    timeout.unref();
+    const finish = (fn, value) => { if (settled) return; settled = true; clearTimeout(timeout); fn(value); };
+    socket.setEncoding('utf8');
+    socket.on('connect', () => socket.write(`${JSON.stringify({ type: 'command', command })}\n`));
+    socket.on('data', chunk => {
+      buffer += chunk;
+      let newline;
+      while ((newline = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, newline).trim(); buffer = buffer.slice(newline + 1);
+        if (!line) continue;
+        try {
+          const response = JSON.parse(line);
+          if (response.type === 'result') { socket.end(); finish(resolve, response); return; }
+        } catch {}
+      }
+    });
+    socket.on('error', error => finish(reject, error));
+    socket.on('close', () => { if (!settled) finish(reject, new Error('Emulator console connection closed before returning a result.')); });
   });
 }
 
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
-  if (!['start', 'stop', 'restart', 'emulatorstatus'].includes(interaction.commandName)) return;
-
+  if (!['start', 'stop', 'restart', 'emulatorstatus', 'clearall'].includes(interaction.commandName)) return;
   try {
     if (!(await requireAdministrator(interaction))) return;
-
     if (interaction.commandName === 'emulatorstatus') {
       const status = readEmulatorStatus();
-      await interaction.reply({ embeds: [new EmbedBuilder()
-        .setTitle('Aera Emulator Status')
-        .setDescription(emulatorStatusText(status))
-        .setTimestamp()] , ephemeral: true });
+      await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Emulator Status').setDescription(emulatorStatusText(status)).setTimestamp()], ephemeral: true });
       return;
     }
-
+    if (interaction.commandName === 'clearall') {
+      const status = readEmulatorStatus();
+      if (!status?.running) { await interaction.reply({ content: 'The Aera emulator is not running.', ephemeral: true }); return; }
+      const response = await sendEmulatorConsoleCommand('clear all');
+      const description = response?.ok === false ? `Failed to execute \`clear all\`: ${response.message || 'Unknown error.'}` : (response?.message || 'The emulator processed `clear all`.');
+      await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Emulator — clear all').setDescription(description).setTimestamp()], ephemeral: true });
+      return;
+    }
     const action = interaction.commandName;
     const response = await queueEmulatorAction(action);
     const status = readEmulatorStatus();
     const description = response?.message || `${action} request processed.`;
-    await interaction.reply({ embeds: [new EmbedBuilder()
-      .setTitle(`Aera Emulator — ${action}`)
-      .setDescription(`${description}\n\n${emulatorStatusText(status)}`)
-      .setTimestamp()], ephemeral: true });
+    await interaction.reply({ embeds: [new EmbedBuilder().setTitle(`Aera Emulator — ${action}`).setDescription(`${description}\n\n${emulatorStatusText(status)}`).setTimestamp()], ephemeral: true });
   } catch (error) {
     console.error(`[Aera Discord] Emulator command ${interaction.commandName} failed:`, error);
-    const message = error?.message?.includes('Timed out')
-      ? 'The emulator supervisor did not respond. Make sure `AeraPHPEmulatorSupervisor` is installed and running.'
-      : 'The emulator command could not be completed.';
+    const message = error?.message?.includes('Timed out') ? 'The emulator supervisor/console did not respond. Make sure the Aera PHP emulator and its local console bridge are running.' : 'The emulator command could not be completed.';
     if (interaction.replied || interaction.deferred) await interaction.followUp({ content: message, ephemeral: true }).catch(() => {});
     else await interaction.reply({ content: message, ephemeral: true }).catch(() => {});
   }
