@@ -36,14 +36,14 @@ spl_autoload_register(static function (string $class): void {
             }
 PHP;
         if (!str_contains($code, "if(\$cmd==='dropall')") && str_contains($code, $needle)) {
-            $code = str_replace($needle, $dropAll.$needle, $code, 1);
+            $dropAllCount = 0;
+            $code = str_replace($needle, $dropAll.$needle, $code, $dropAllCount);
             $helpNeedle = '/giveitem (item id) (player name) [quantity]';
             $helpReplacement = '/giveitem (item id) (player name) [quantity] /dropall (item id) (amount)';
             $helpReplacements = 0;
             $code = str_replace($helpNeedle, $helpReplacement, $code, $helpReplacements);
         }
 
-        // Keep the generated router source valid PHP when evaluated.
         $code = preg_replace('/^<\?php\s*/', '', $code, 1) ?? $code;
         eval($code);
         return;
