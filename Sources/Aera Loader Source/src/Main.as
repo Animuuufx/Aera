@@ -1,7 +1,6 @@
 package
 {
 
-    import com.adobe.serialization.json.JSON;
     import flash.display.MovieClip;
     import flash.net.URLLoader;
     import flash.net.URLLoaderDataFormat;
