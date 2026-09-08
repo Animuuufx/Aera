@@ -1,19 +1,6 @@
 <?php $title='Store'; ob_start(); ?>
+<style>.store-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}.store-card{background:#12161b;border:1px solid #252a31;box-shadow:0 12px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;min-height:100%}.store-card-image{height:190px;background:#0b0e12;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid #252a31}.store-card-image img{width:100%;height:100%;object-fit:cover}.store-card-body{padding:20px;display:flex;flex-direction:column;flex:1}.store-card h2{margin:4px 0 10px;color:#f4f6f8}.store-card p{color:#9da4ad;flex:1}.store-category{text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:#c4312e;font-weight:bold}.store-card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:15px;border-top:1px solid #252a31}.store-card-footer strong{font-size:18px;color:#f4f6f8}</style>
 <section class="portal-section"><div class="panel-title"><div><h1>Aera Store</h1><p class="muted">Support Aera and browse available items, upgrades, and other extras.</p></div></div>
-<?php if(!$products): ?>
-<div class="panel"><h2>Store coming soon</h2><p class="muted">There are no store products available yet. Check back soon.</p></div>
-<?php else: ?>
-<div class="store-grid">
-<?php foreach($products as $p): ?>
-<article class="store-card">
-<?php if(!empty($p['ImageURL'])): ?><div class="store-card-image"><img src="<?= e($p['ImageURL']) ?>" alt="<?= e($p['Title']) ?>" loading="lazy"></div><?php endif; ?>
-<div class="store-card-body">
-<?php if(!empty($p['Category'])): ?><div class="store-category"><?= e($p['Category']) ?></div><?php endif; ?>
-<h2><?= e($p['Title']) ?></h2>
-<?php if(!empty($p['Description'])): ?><p><?= nl2br(e($p['Description'])) ?></p><?php endif; ?>
-<div class="store-card-footer"><strong><?= e($p['Currency']) ?> <?= number_format((float)$p['Price'],2) ?></strong><?php if(!empty($p['PurchaseURL'])): ?><a class="btn btn-gold" href="<?= e($p['PurchaseURL']) ?>" target="_blank" rel="noopener">Purchase</a><?php else: ?><span class="muted">Coming soon</span><?php endif; ?></div>
-</div></article>
-<?php endforeach; ?>
-</div>
-<?php endif; ?></section>
+<?php if(!$products): ?><div class="panel"><h2>Store coming soon</h2><p class="muted">There are no store products available yet. Check back soon.</p></div>
+<?php else: ?><div class="store-grid"><?php foreach($products as $p): ?><article class="store-card"><?php if(!empty($p['ImageURL'])): ?><div class="store-card-image"><img src="<?= e($p['ImageURL']) ?>" alt="<?= e($p['Title']) ?>" loading="lazy"></div><?php endif; ?><div class="store-card-body"><?php if(!empty($p['Category'])): ?><div class="store-category"><?= e($p['Category']) ?></div><?php endif; ?><h2><?= e($p['Title']) ?></h2><?php if(!empty($p['Description'])): ?><p><?= nl2br(e($p['Description'])) ?></p><?php endif; ?><div class="store-card-footer"><strong><?= e($p['Currency']) ?> <?= number_format((float)$p['Price'],2) ?></strong><?php if(!empty($p['PurchaseURL'])): ?><a class="btn btn-gold" href="<?= e($p['PurchaseURL']) ?>" target="_blank" rel="noopener">Purchase</a><?php else: ?><span class="muted">Coming soon</span><?php endif; ?></div></div></article><?php endforeach; ?></div><?php endif; ?></section>
 <?php $content=ob_get_clean(); require __DIR__.'/layouts/site.php'; ?>
