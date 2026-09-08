@@ -5,9 +5,10 @@ $PidFile=Join-Path $Root 'discord-bot.pid';$LogFile=Join-Path $Root 'discord-bot
 function Get-BotProcesses {
   $items=@()
   try {
+    $target=(Join-Path $Root 'src\index.js').ToLowerInvariant()
     $items=Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction Stop | Where-Object {
       $cmd=[string]$_.CommandLine
-      $cmd -match [regex]::Escape((Join-Path $Root 'src\index.js'))
+      $cmd.ToLowerInvariant().Contains($target)
     }
   } catch {}
   return @($items)
@@ -15,7 +16,13 @@ function Get-BotProcesses {
 function Get-BotProcess {
   $items=Get-BotProcesses
   if($items.Count -gt 0){return $items[0]}
-  if(Test-Path $PidFile){Remove-Item $PidFile -Force -ErrorAction SilentlyContinue}
+  if(Test-Path $PidFile){
+    $savedPid=0
+    if([int]::TryParse((Get-Content $PidFile -Raw -ErrorAction SilentlyContinue).Trim(),[ref]$savedPid) -and $savedPid -gt 0){
+      try { $p=Get-Process -Id $savedPid -ErrorAction Stop; if($p.ProcessName -eq 'node'){return [pscustomobject]@{ProcessId=$savedPid}} } catch {}
+    }
+    Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
+  }
   return $null
 }
 function Write-Result($ok,$message,$botPid=$null){[pscustomobject]@{ok=$ok;message=$message;pid=$botPid;running=([bool](Get-BotProcess))}|ConvertTo-Json -Compress}
@@ -29,10 +36,32 @@ function Invoke-NpmInstall($npm) {
     throw $detail
   }
 }
+function Stop-BotPid([int]$pid) {
+  if($pid -le 0){return}
+  try { & taskkill.exe /PID $pid /T /F *> $null } catch {}
+  Start-Sleep -Milliseconds 150
+  try { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue } catch {}
+}
 if(!(Test-Path $Package)){Write-Result $false 'DiscordBot/package.json was not found.';exit 1}
 try{switch($Action){
 'status'{$p=Get-BotProcess;if($p){Write-Result $true 'Discord bot process is running.' $p.ProcessId}else{Write-Result $true 'Discord bot process is stopped.'};exit 0}
-'stop'{$items=Get-BotProcesses;if($items.Count -eq 0){Remove-Item $PidFile -Force -ErrorAction SilentlyContinue;Write-Result $true 'Discord bot is already stopped.';exit 0};foreach($item in $items){Stop-Process -Id ([int]$item.ProcessId) -Force -ErrorAction SilentlyContinue};Start-Sleep -Milliseconds 250;Remove-Item $PidFile -Force -ErrorAction SilentlyContinue;if((Get-BotProcesses).Count -gt 0){Write-Result $false 'Discord bot process could not be stopped.';exit 1};Write-Result $true 'Discord bot stopped.';exit 0}
+'stop'{
+  $items=Get-BotProcesses
+  $pids=@($items | ForEach-Object {[int]$_.ProcessId})
+  if($pids.Count -eq 0 -and (Test-Path $PidFile)){
+    $savedPid=0
+    if([int]::TryParse((Get-Content $PidFile -Raw -ErrorAction SilentlyContinue).Trim(),[ref]$savedPid) -and $savedPid -gt 0){$pids=@($savedPid)}
+  }
+  $pids=$pids | Select-Object -Unique
+  if($pids.Count -eq 0){Remove-Item $PidFile -Force -ErrorAction SilentlyContinue;Remove-Item (Join-Path $Root 'discord-bot-health.json') -Force -ErrorAction SilentlyContinue;Write-Result $true 'Discord bot is already stopped.';exit 0}
+  foreach($botPid in $pids){Stop-BotPid $botPid}
+  Start-Sleep -Milliseconds 500
+  Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
+  Remove-Item (Join-Path $Root 'discord-bot-health.json') -Force -ErrorAction SilentlyContinue
+  $remaining=Get-BotProcesses
+  if($remaining.Count -gt 0){Write-Result $false 'Discord bot process could not be stopped. Check Windows permissions for the IIS application pool.';exit 1}
+  Write-Result $true 'Discord bot stopped.';exit 0
+}
 'start'{if(!(Test-Path $EnvFile)){Write-Result $false 'DiscordBot/.env is not configured. Save the bot settings from the admin panel first.';exit 1};$existing=Get-BotProcess;if($existing){Write-Result $true 'Discord bot is already running.' $existing.ProcessId;exit 0};$node=(Get-Command node -ErrorAction SilentlyContinue).Source;if(!$node){Write-Result $false 'Node.js was not found in PATH. Install Node.js 20+ on the server.';exit 1};if(!(Test-Path (Join-Path $Root 'node_modules'))){$npm=(Get-Command npm -ErrorAction SilentlyContinue).Source;if(!$npm){Write-Result $false 'npm was not found in PATH.';exit 1};Invoke-NpmInstall $npm};Remove-Item $LogFile,$ErrorLog -Force -ErrorAction SilentlyContinue;$p=Start-Process -FilePath $node -ArgumentList @('src/index.js') -WorkingDirectory $Root -RedirectStandardOutput $LogFile -RedirectStandardError $ErrorLog -PassThru -WindowStyle Hidden;Set-Content -Path $PidFile -Value $p.Id -NoNewline;Start-Sleep -Milliseconds 700;$check=Get-BotProcess;if(!$check){Write-Result $false 'Discord bot exited immediately. Check discord-bot.log and discord-bot-error.log.';exit 1};Write-Result $true 'Discord bot started.' $check.ProcessId;exit 0}
 'restart'{& $MyInvocation.MyCommand.Path -Action stop | Out-Null;Start-Sleep -Milliseconds 250;& $MyInvocation.MyCommand.Path -Action start;exit $LASTEXITCODE}
 'deploy'{if(!(Test-Path $EnvFile)){Write-Result $false 'DiscordBot/.env is not configured.';exit 1};$npm=(Get-Command npm -ErrorAction SilentlyContinue).Source;if(!$npm){Write-Result $false 'npm was not found in PATH.';exit 1};Invoke-NpmInstall $npm;& $npm --prefix $Root run deploy;if($LASTEXITCODE -ne 0){Write-Result $false 'Discord slash-command deployment failed. Check DiscordBot/npm-install.log.';exit 1};Write-Result $true 'Discord slash commands deployed.';exit 0}
