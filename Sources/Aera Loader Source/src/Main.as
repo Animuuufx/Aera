@@ -123,9 +123,7 @@ package
                 game.params[parameter] = root.loaderInfo.parameters[parameter];
             }
 
-            // Rich Presence runs from the AIR Loader, where the native extension is available.
-            // This allows the loaded game SWF to remain a normal SWF and also supports older client builds.
-            DiscordPresence.watchGame(game);
+            AeraDiscordPresence.start(game);
         }
 
         public function onError(event:IOErrorEvent):void
