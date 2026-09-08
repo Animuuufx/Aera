@@ -1,0 +1,58 @@
+name: Apply Aera dropall patch
+
+on:
+  push:
+    branches: [Discord-bot-working]
+    paths: ['.github/workflows/aera-dropall-patch.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Discord-bot-working
+          fetch-depth: 0
+      - name: Patch ExtensionRouter
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('Emulator/PHP/src/ExtensionRouter.php')
+          s = p.read_text(encoding='utf-8')
+          if "if($cmd==='dropall')" in s:
+              print('dropall already present')
+          else:
+              marker = "            if($cmd==='help'){"
+              block = r'''            if($cmd==='dropall'){
+                $itemId=(int)($p[1]??0);$qty=max(1,(int)($p[2]??1));
+                if($itemId<=0||$qty<=0){$this->server->sendRaw($u,['warning','Usage: /dropall itemid amount']);return;}
+                $item=$this->world->items[$itemId]??$this->db->one('SELECT * FROM items WHERE id=? LIMIT 1',[$itemId]);
+                if(!$item){$this->server->sendRaw($u,['warning','Unknown item ID '.$itemId.'.']);return;}
+                $online=array_values(array_filter($this->server->clients(),fn($c)=>$c->authenticated));
+                if(!$online){$this->server->sendRaw($u,['warning','There are no players currently online.']);return;}
+                $given=0;$failed=0;$actual=0;
+                foreach($online as $target){
+                    $result=$this->grantItemToPlayer($target->dbId,$itemId,$qty,'/dropall by '.$u->username);
+                    if(!empty($result['ok'])){$given++;$actual+=(int)($result['quantity']??0);}else{$failed++;}
+                }
+                $message='Dropall: gave '.$actual.' x '.$item['Name'].' to '.$given.' of '.count($online).' online player(s).';
+                if($failed>0)$message.=' '.$failed.' player(s) could not receive it (for example, a full stack).';
+                $this->server->sendRaw($u,['server',$message]);return;
+            }
+'''
+              if marker not in s:
+                  raise SystemExit('dropall insertion marker not found')
+              s = s.replace(marker, block + marker, 1)
+              p.write_text(s, encoding='utf-8', newline='\n')
+      - name: Commit source change and remove patch workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Emulator/PHP/src/ExtensionRouter.php
+          git rm .github/workflows/aera-dropall-patch.yml
+          git commit -m 'feat: add /dropall emulator command'
+          git push origin HEAD:Discord-bot-working
