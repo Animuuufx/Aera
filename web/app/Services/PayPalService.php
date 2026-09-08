@@ -6,7 +6,11 @@ use RuntimeException;
 final class PayPalService
 {
     private static function base(): string { return strtolower((string)Config::get('paypal.mode','sandbox'))==='live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'; }
-    public static function clientId(): string { $id=trim((string)Config::get('paypal.client_id',''));if($id==='')throw new RuntimeException('PayPal Client ID is not configured.');return $id; }
+    public static function clientIdOrEmpty(): string { return trim((string)Config::get('paypal.client_id','')); }
+    public static function clientId(): string { $id=self::clientIdOrEmpty();if($id==='')throw new RuntimeException('PayPal Client ID is not configured.');return $id; }
+    public static function clientSecretConfigured(): bool { return trim((string)Config::get('paypal.client_secret',''))!==''; }
+    public static function merchantEmail(): string { return trim((string)Config::get('paypal.merchant_email','')); }
+    public static function brandName(): string { return trim((string)Config::get('paypal.brand_name','Aera')); }
     public static function mode(): string { return strtolower((string)Config::get('paypal.mode','sandbox'))==='live'?'live':'sandbox'; }
     private static function credentials(): array { $id=self::clientId();$secret=(string)Config::get('paypal.client_secret','');if($secret==='')throw new RuntimeException('PayPal Client Secret is not configured.');return [$id,$secret]; }
     private static function request(string $method,string $url,string $token,array $body=[]): array
