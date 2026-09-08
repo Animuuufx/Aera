@@ -12,10 +12,12 @@ final class AdminDiscordController
 {
     private function root(): string { return dirname(__DIR__, 3) . '/DiscordBot'; }
     private function envFile(): string { return $this->root() . '/.env'; }
+    private function pidFile(): string { return $this->root() . '/discord-bot.pid'; }
     private function script(): string { return $this->root() . '/aera-discord-bot-control.ps1'; }
     public function index(Request $request): void
     {
-        // Never run PowerShell/socket checks during the initial page request.
+        // Do not run PowerShell during the initial page request. Status is read from
+        // the bot's lightweight localhost health endpoint instead.
         $admin=Auth::requireAdmin(); $config=$this->readEnv();
         View::render('admin.discord',['admin'=>$admin,'config'=>$config,'status'=>['ok'=>true,'running'=>false,'message'=>'Checking bot status…'],'health'=>['ok'=>false,'discordReady'=>false,'message'=>'Checking…'],'log'=>$this->tailLog(),'botRoot'=>$this->root(),'configured'=>!empty($config['DISCORD_TOKEN'])]);
     }
@@ -41,8 +43,23 @@ final class AdminDiscordController
     {
         $admin=Auth::requireAdmin();if((int)($admin['Access']??0)<60)Response::json(['ok'=>false,'message'=>'Administrator access is required.'],403);Csrf::verify($request);$action=strtolower(trim((string)$request->input('action','')));if(!in_array($action,['start','stop','restart','deploy'],true))Response::json(['ok'=>false,'message'=>'Unknown Discord bot action.'],422);$result=$this->runControl($action);Response::json($result,!empty($result['ok'])?200:500);
     }
-    public function status(Request $request): void { Auth::requireAdmin();Response::json(['ok'=>true,'process'=>$this->safeControlStatus(),'health'=>$this->safeHealth(),'log'=>$this->tailLog()]); }
-    private function safeControlStatus(): array { try{return $this->runControl('status');}catch(Throwable $e){return ['ok'=>false,'running'=>false,'message'=>'Process status unavailable: '.$e->getMessage()];} }
+    public function status(Request $request): void
+    {
+        Auth::requireAdmin();
+        // This endpoint is polled by the browser every 2 seconds. Never invoke
+        // PowerShell here: doing so repeatedly can consume IIS/PHP workers and
+        // make the entire website appear to hang during bot start/stop operations.
+        $health=$this->safeHealth();
+        $running=!empty($health['ok']);
+        $pid=null;
+        $pidFile=$this->pidFile();
+        if($running&&is_file($pidFile)){
+            $raw=trim((string)@file_get_contents($pidFile));
+            if(ctype_digit($raw))$pid=(int)$raw;
+        }
+        $process=['ok'=>true,'running'=>$running,'pid'=>$pid,'message'=>$running?'Discord bot process is running.':'Discord bot process is stopped.'];
+        Response::json(['ok'=>true,'process'=>$process,'health'=>$health,'log'=>$this->tailLog()]);
+    }
     private function runControl(string $action): array
     {
         if(!is_file($this->script()))return ['ok'=>false,'running'=>false,'message'=>'Discord bot control script is missing.'];if(!function_exists('proc_open'))return ['ok'=>false,'running'=>false,'message'=>'PHP process control (proc_open) is disabled.'];$comSpec=(string)getenv('ComSpec');$powershell=$comSpec!==''?dirname($comSpec).'/WindowsPowerShell/v1.0/powershell.exe':'powershell.exe';if(!is_file($powershell)&&$powershell!=='powershell.exe')$powershell='powershell.exe';$cmd='-NoProfile -ExecutionPolicy Bypass -File '.escapeshellarg($this->script()).' -Action '.escapeshellarg($action);
