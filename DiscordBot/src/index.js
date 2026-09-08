@@ -2,8 +2,10 @@ require('dotenv').config();
 const http = require('node:http');
 const { Client, GatewayIntentBits, Events } = require('discord.js');
 const { pool } = require('./db');
+const { env, envNumber } = require('./env');
 
-if (!process.env.DISCORD_TOKEN) {
+const discordToken = env('DISCORD_TOKEN');
+if (!discordToken) {
   throw new Error('DISCORD_TOKEN is required. Copy .env.example to .env and configure the bot.');
 }
 
@@ -39,7 +41,11 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-const statusPort = Number(process.env.BOT_STATUS_PORT || 5592);
+const statusPort = envNumber('BOT_STATUS_PORT', 5592);
+if (statusPort < 0 || statusPort >= 65536 || !Number.isInteger(statusPort)) {
+  throw new Error(`BOT_STATUS_PORT must be an integer from 0 to 65535. Received: ${statusPort}`);
+}
+
 http.createServer((req, res) => {
   if (req.url !== '/health') {
     res.writeHead(404);
@@ -56,4 +62,4 @@ http.createServer((req, res) => {
   console.log(`[Aera Discord] Health endpoint: 127.0.0.1:${statusPort}/health`);
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(discordToken);
