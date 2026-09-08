@@ -12,7 +12,7 @@ if errorlevel 1 (
 
 echo ===============================================
 echo NightVaults Mail Server - Stalwart
- e cho ===============================================
+echo ===============================================
 echo.
 echo This setup uses Stalwart Mail Server for Windows.
 echo Domain: nightvaults.com
@@ -29,7 +29,7 @@ if errorlevel 1 (
 echo.
 echo Next steps:
 echo   1. Open http://127.0.0.1:8080/admin
- e cho 2. Complete the Stalwart setup wizard.
+echo   2. Complete the Stalwart setup wizard.
 echo   3. Set the server hostname to mail.nightvaults.com.
 echo   4. Set the default mail domain to nightvaults.com.
 echo   5. Add the generated DNS records in Cloudflare.
