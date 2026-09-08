@@ -18,6 +18,6 @@
 </form>
 </div>
 <script>
-async function testPayPal(){const out=document.getElementById('paypal-test-status');out.textContent='Testing…';try{const r=await fetch('/admin/store/paypal/test',{cache:'no-store',headers:{'Accept':'application/json'}});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||('Request failed (HTTP '+r.status+').'));out.textContent='✓ '+d.message+' ('+d.mode+')';out.style.color='#7ddc9a';}catch(e){out.textContent='✕ '+(e.message||'Connection test failed.');out.style.color='#ef443f';}}
+async function testPayPal(){const out=document.getElementById('paypal-test-status');out.textContent='Testing…';out.style.color='';try{const r=await fetch('/admin/store/paypal/test',{cache:'no-store',headers:{'Accept':'application/json'}});const text=await r.text();let d;try{d=JSON.parse(text)}catch(_){throw new Error('Server returned HTTP '+r.status+' instead of JSON. Check the Aera/PHP error log.')};if(!r.ok||!d.ok)throw new Error(d.error||('Request failed (HTTP '+r.status+').'));out.textContent='✓ '+d.message+' ('+d.mode+')';out.style.color='#7ddc9a';}catch(e){out.textContent='✕ '+(e.message||'Connection test failed.');out.style.color='#ef443f';}}
 </script>
 <?php $content=ob_get_clean(); require __DIR__.'/../../layouts/admin.php'; ?>
