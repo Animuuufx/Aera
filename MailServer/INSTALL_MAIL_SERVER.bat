@@ -2,24 +2,36 @@
 setlocal
 cd /d "%~dp0"
 
+fltmc >nul 2>&1
+if errorlevel 1 (
+    echo This installer must be run as Administrator.
+    echo Right-click this file and choose "Run as administrator".
+    pause
+    exit /b 1
+)
+
 echo ===============================================
-echo NightVaults Mail Server - MailEnable Standard
-echo ===============================================
+echo NightVaults Mail Server - Stalwart
+ e cho ===============================================
 echo.
-echo This setup uses MailEnable Standard for Windows.
-echo Download the current stable installer from:
-echo https://www.mailenable.com/download.asp
+echo This setup uses Stalwart Mail Server for Windows.
+echo Domain: nightvaults.com
+echo Mail hostname: mail.nightvaults.com
 echo.
-echo Recommended stable release: MailEnable Standard 10.59.
-echo Do not use the 10.60 beta for the production mail server.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-stalwart.ps1"
+if errorlevel 1 (
+    echo.
+    echo Stalwart setup did not complete.
+    pause
+    exit /b 1
+)
+
 echo.
-start "" "https://www.mailenable.com/download.asp"
-echo After installing MailEnable Standard with Webmail enabled,
-echo run:
-echo.
-echo   powershell -ExecutionPolicy Bypass -File "%~dp0provision-mailboxes.ps1"
-echo   powershell -ExecutionPolicy Bypass -File "%~dp0setup-mail-firewall.ps1"
-echo.
-echo Then follow cloudflare-dns.md for Cloudflare DNS and DKIM.
+echo Next steps:
+echo   1. Open http://127.0.0.1:8080/admin
+ e cho 2. Complete the Stalwart setup wizard.
+echo   3. Set the server hostname to mail.nightvaults.com.
+echo   4. Set the default mail domain to nightvaults.com.
+echo   5. Add the generated DNS records in Cloudflare.
 echo.
 pause
