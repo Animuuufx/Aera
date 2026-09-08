@@ -50,14 +50,16 @@ if (-not (Test-Path $stalwartExe)) {
     throw "Stalwart executable was not installed at $stalwartExe."
 }
 
-# Stalwart v0.16 uses a small config.json that points at its data store.
-# Do not invent server/domain settings here; those are created by the setup wizard.
+# Stalwart v0.16+ uses a small JSON datastore configuration file. The
+# remaining server/domain/account settings live in the Stalwart datastore and
+# are created by the bootstrap WebUI.
 if (-not (Test-Path $configPath)) {
     $config = [ordered]@{
-        'storage.data' = (Join-Path $dataDir 'data').Replace('\','/')
+        '@type' = 'RocksDb'
+        'path' = $dataDir.Replace('\','/')
     }
     ($config | ConvertTo-Json -Compress) | Set-Content -Path $configPath -Encoding UTF8
-    Write-Host "Created Stalwart datastore config at $configPath" -ForegroundColor Green
+    Write-Host "Created Stalwart RocksDB config at $configPath" -ForegroundColor Green
 }
 
 # Stalwart's documented Windows deployment uses NSSM as the service wrapper.
