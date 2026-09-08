@@ -13,8 +13,9 @@ spl_autoload_register(static function (string $class): void {
             throw new \RuntimeException('Unable to load ExtensionRouter.php');
         }
 
-        // Keep the main router source untouched while injecting this small
-        // staff command when the class is loaded.
+        // Aera admin command patch: /dropall itemid amount.
+        // Injected here so the command is deployed with a normal source commit
+        // without rewriting the large ExtensionRouter.php blob.
         $needle = "            if(\$cmd==='help'){";
         $dropAll = <<<'PHP'
             if($cmd==='dropall'){
