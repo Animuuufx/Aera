@@ -1,0 +1,6 @@
+Emulator/PHP/runtime/watchdog.pid
+Emulator/PHP/runtime/status.json
+Emulator/PHP/runtime/logs/process-stdout.log
+Emulator/PHP/runtime/logs/panel-console.log
+Emulator/PHP/runtime/emulator.pid
+Emulator/PHP/runtime/control/status.json

@@ -21960,3 +21960,7 @@
 [2026-09-07 18:53:24] INFO    Player anitest -> moveToCell: Cell: Enter | Pad: Spawn | Room: limbo | Cell: Enter | FromRoomID: 100
 [2026-09-07 18:53:25] INFO    Player anitest -> retrieveUserDatas: User IDs: 1 | Room: limbo | Cell: Enter | FromRoomID: 100
 [2026-09-07 18:53:25] INFO    Player anitest -> retrieveInventory: Param 1: 1 | Room: limbo | Cell: Enter | FromRoomID: 100
+[2026-09-07 19:54:38] ERROR   PHP 2: mkdir(): File exists @ C:\inetpub\wwwroot\AERA\Emulator\PHP\src\GameServer.php:1091
+[2026-09-07 19:54:38] INFO    Aera PHP Emulator listening on 0.0.0.0:5589
+[2026-09-07 19:54:38] INFO    Live admin console listening on 127.0.0.1:5591
+[2026-09-07 19:54:38] INFO    Protocol: SmartFoxServer 1.x compatible socket + Aera xt requests
