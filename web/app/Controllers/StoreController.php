@@ -9,6 +9,7 @@ use Aera\Foundation\Request;
 use Aera\Foundation\Response;
 use Aera\Foundation\Session;
 use Aera\Foundation\View;
+use Aera\Services\StoreRewardService;
 use Throwable;
 
 final class StoreController
@@ -28,9 +29,9 @@ final class StoreController
             Active TINYINT(1) NOT NULL DEFAULT 1,
             CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UpdatedAt DATETIME NULL DEFAULT NULL,
-            PRIMARY KEY (id),
-            KEY idx_store_active (Active, SortOrder, id)
+            PRIMARY KEY (id), KEY idx_store_active (Active, SortOrder, id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+        StoreRewardService::ensureTables();
     }
 
     public function index(Request $request): void
@@ -53,7 +54,9 @@ final class StoreController
         $id=(int)$request->input('id',0);
         $product=$id?Database::one('SELECT * FROM store_products WHERE id=?',[$id]):[];
         if($id&&!$product) Response::abort(404,'Store product not found.');
-        View::render('admin.store.form',['admin'=>$admin,'product'=>$product,'mode'=>$id?'edit':'create']);
+        $rewardData=StoreRewardService::options();
+        $rewards=$id?StoreRewardService::rewards($id):[];
+        View::render('admin.store.form',['admin'=>$admin,'product'=>$product,'mode'=>$id?'edit':'create','items'=>$rewardData['items'],'titles'=>$rewardData['titles'],'rewards'=>$rewards]);
     }
 
     public function create(Request $request): void { $this->save($request,null); }
@@ -73,17 +76,28 @@ final class StoreController
         $sort=(int)$request->input('SortOrder',0);
         $active=(int)(bool)$request->input('Active',0);
         try {
-            if($id) Database::run('UPDATE store_products SET Title=?,Description=?,Category=?,Price=?,Currency=?,ImageURL=?,PurchaseURL=?,SortOrder=?,Active=?,UpdatedAt=NOW() WHERE id=?',[$title,$description,$category,$price,$currency,$image?:null,$purchase?:null,$sort,$active,$id]);
-            else Database::run('INSERT INTO store_products (Title,Description,Category,Price,Currency,ImageURL,PurchaseURL,SortOrder,Active) VALUES (?,?,?,?,?,?,?,?,?)',[$title,$description,$category,$price,$currency,$image?:null,$purchase?:null,$sort,$active]);
-            Session::flash('success','Store product saved.');
-        } catch(Throwable $e) { Session::flash('error','Unable to save store product: '.$e->getMessage()); }
+            $pdo=Database::connection(); $pdo->beginTransaction();
+            if($id)$pdo->prepare('UPDATE store_products SET Title=?,Description=?,Category=?,Price=?,Currency=?,ImageURL=?,PurchaseURL=?,SortOrder=?,Active=?,UpdatedAt=NOW() WHERE id=?')->execute([$title,$description,$category,$price,$currency,$image?:null,$purchase?:null,$sort,$active,$id]);
+            else{$pdo->prepare('INSERT INTO store_products (Title,Description,Category,Price,Currency,ImageURL,PurchaseURL,SortOrder,Active) VALUES (?,?,?,?,?,?,?,?,?)')->execute([$title,$description,$category,$price,$currency,$image?:null,$purchase?:null,$sort,$active]);$id=(int)$pdo->lastInsertId();}
+            $pdo->commit();
+            StoreRewardService::saveRewards((int)$id,(array)$request->input('ItemIDs',[]),(array)$request->input('ItemQty',[]),(array)$request->input('TitleIDs',[]));
+            Session::flash('success','Store product and rewards saved.');
+        } catch(Throwable $e) { if(Database::connection()->inTransaction())Database::connection()->rollBack(); Session::flash('error','Unable to save store product: '.$e->getMessage()); }
         Response::redirect('/admin/store');
     }
 
     public function delete(Request $request,string $id): void
     {
         Auth::requireAdmin(); Csrf::verify($request); $this->ensureTable();
+        Database::run('DELETE FROM store_product_rewards WHERE ProductID=?',[(int)$id]);
         Database::run('DELETE FROM store_products WHERE id=?',[(int)$id]);
         Session::flash('success','Store product deleted.'); Response::redirect('/admin/store');
+    }
+
+    /** Call this only after PayPal has verified and captured the order. */
+    public function grantAfterCapture(int $userId,int $productId,string $paypalOrderId): bool
+    {
+        $this->ensureTable();
+        return StoreRewardService::grant($userId,$productId,$paypalOrderId);
     }
 }
