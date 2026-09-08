@@ -42,7 +42,8 @@ const commands = [
   new SlashCommandBuilder().setName('start').setDescription('Start the Aera PHP emulator (administrator only).'),
   new SlashCommandBuilder().setName('stop').setDescription('Stop the Aera PHP emulator (administrator only).'),
   new SlashCommandBuilder().setName('restart').setDescription('Restart the Aera PHP emulator (administrator only).'),
-  new SlashCommandBuilder().setName('emulatorstatus').setDescription('Show Aera PHP emulator supervisor status (administrator only).')
+  new SlashCommandBuilder().setName('emulatorstatus').setDescription('Show Aera PHP emulator supervisor status (administrator only).'),
+  new SlashCommandBuilder().setName('clearall').setDescription('Run the Aera emulator command `clear all` (administrator only).')
 ].map(command => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);
