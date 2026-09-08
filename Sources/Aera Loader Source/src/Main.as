@@ -13,7 +13,11 @@ package
     import flash.system.LoaderContext;
     import flash.events.ProgressEvent;
     import flash.text.TextField;
-	import flash.utils.Dictionary;
+    import flash.utils.Dictionary;
+    import flash.desktop.NativeApplication;
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.filesystem.File;
 
 public dynamic class Main extends MovieClip
     {
@@ -32,13 +36,14 @@ public dynamic class Main extends MovieClip
         public var game:*;
 
         private var contexts:Dictionary = new Dictionary();
+        private var discordProcess:NativeProcess;
+        private static const DISCORD_APPLICATION_ID:String = "REPLACE_WITH_AERA_DISCORD_APPLICATION_ID";
 
         public function Main()
         {
-			addFrameScript(0, frame1);
-		
-			txtLoading.mouseEnabled = false;
-		
+            addFrameScript(0, frame1);
+            txtLoading.mouseEnabled = false;
+
             contexts["title"] = new LoaderContext(true, new ApplicationDomain());
             contexts["title"].checkPolicyFile = false;
             contexts["title"].allowCodeImport = true;
@@ -46,6 +51,57 @@ public dynamic class Main extends MovieClip
             contexts["client"] = new LoaderContext(true, new ApplicationDomain());
             contexts["client"].checkPolicyFile = false;
             contexts["client"].allowCodeImport = true;
+
+            startDiscordPresence();
+        }
+
+        private function startDiscordPresence():void
+        {
+            try
+            {
+                if (!NativeProcess.isSupported) return;
+                if (DISCORD_APPLICATION_ID == "REPLACE_WITH_AERA_DISCORD_APPLICATION_ID") return;
+
+                var script:File = File.applicationDirectory.resolvePath("AeraDiscordPresence.ps1");
+                if (!script.exists) return;
+
+                var powershell:File = new File("C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe");
+                if (!powershell.exists) return;
+
+                var info:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+                info.executable = powershell;
+                info.arguments = new Vector.<String>();
+                info.arguments.push("-NoLogo");
+                info.arguments.push("-NoProfile");
+                info.arguments.push("-NonInteractive");
+                info.arguments.push("-ExecutionPolicy");
+                info.arguments.push("Bypass");
+                info.arguments.push("-File");
+                info.arguments.push(script.nativePath);
+                info.arguments.push("-ApplicationId");
+                info.arguments.push(DISCORD_APPLICATION_ID);
+                info.arguments.push("-Port");
+                info.arguments.push("6463");
+
+                discordProcess = new NativeProcess();
+                discordProcess.start(info);
+                NativeApplication.nativeApplication.addEventListener(Event.EXITING, stopDiscordPresence);
+            }
+            catch (e:Error)
+            {
+                trace("Discord presence bridge unavailable: " + e.message);
+            }
+        }
+
+        private function stopDiscordPresence(event:Event):void
+        {
+            try
+            {
+                if (discordProcess != null && discordProcess.running) discordProcess.exit(true);
+            }
+            catch (e:Error)
+            {
+            }
         }
 
         private function onLoadCheckCache(onComplete:Function, context:LoaderContext, file:String, onProgress:Function = null, onError:Function = null, customPath:Boolean = false):void {
@@ -102,18 +158,18 @@ public dynamic class Main extends MovieClip
 
         public function startGame():void
         {
-			removeChildAt(0);
-		
+            removeChildAt(0);
+
             var loader:* = stage;
-			stage.removeChildAt(0);
-			game = loader.addChild(game);
+            stage.removeChildAt(0);
+            game = loader.addChild(game);
             game.params = {
                 sTitle: sTitle,
                 vars: loaderVars,
                 sURL: sURL,
                 sBG: sBG,
-				loginURL: loginURL,
-				sCharSelect: sCharSelect,
+                loginURL: loginURL,
+                sCharSelect: sCharSelect,
                 sLoadout: sLoadout
             };
             game.titleDomain = contexts["title"].applicationDomain;
@@ -166,4 +222,3 @@ public dynamic class Main extends MovieClip
 
     }
 }//package Loader_Spider_fla
-
