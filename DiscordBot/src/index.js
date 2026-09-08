@@ -23,8 +23,11 @@ const parseRoleIds = name => env(name)
 const moderatorRoleIds = parseRoleIds('DISCORD_MOD_ROLE_IDS');
 const administratorRoleIds = parseRoleIds('DISCORD_ADMIN_ROLE_IDS');
 
+// Only request the Gateway intents this bot actually needs.
+// GuildMembers is privileged and is not required for slash-command
+// interactions because Discord supplies the resolved member on the interaction.
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
+  intents: [GatewayIntentBits.Guilds]
 });
 
 function hasConfiguredRole(interaction, roleIds) {
@@ -298,4 +301,7 @@ http.createServer((req, res) => {
   console.log(`[Aera Discord] Health endpoint: 127.0.0.1:${statusPort}/health`);
 });
 
-client.login(discordToken);
+client.login(discordToken).catch(error => {
+  console.error('[Aera Discord] Discord login failed:', error);
+  process.exitCode = 1;
+});
