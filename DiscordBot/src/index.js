@@ -2,116 +2,54 @@ require('dotenv').config();
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const {
-  Client,
-  GatewayIntentBits,
-  Events,
-  PermissionFlagsBits,
-  EmbedBuilder
-} = require('discord.js');
+const crypto = require('node:crypto');
+const { Client, GatewayIntentBits, Events, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const { pool } = require('./db');
 const { env, envNumber } = require('./env');
-
 const discordToken = env('DISCORD_TOKEN');
 if (!discordToken) throw new Error('DISCORD_TOKEN is required. Copy .env.example to .env and configure the bot.');
-
 const parseRoleIds = name => env(name).split(',').map(value => value.trim()).filter(Boolean);
 const moderatorRoleIds = parseRoleIds('DISCORD_MOD_ROLE_IDS');
 const administratorRoleIds = parseRoleIds('DISCORD_ADMIN_ROLE_IDS');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
 function hasConfiguredRole(interaction, roleIds) { return roleIds.length > 0 && interaction.member?.roles?.cache?.some(role => roleIds.includes(role.id)); }
 function isModerator(interaction) { if (hasConfiguredRole(interaction, moderatorRoleIds) || hasConfiguredRole(interaction, administratorRoleIds)) return true; return interaction.memberPermissions?.has(PermissionFlagsBits.ModerateMembers) || false; }
 function isAdministrator(interaction) { if (hasConfiguredRole(interaction, administratorRoleIds)) return true; return interaction.memberPermissions?.has(PermissionFlagsBits.Administrator) || false; }
 async function requireModerator(interaction) { if (isModerator(interaction)) return true; await interaction.reply({ content: 'You need the Aera Moderator role to use this command.', ephemeral: true }); return false; }
 async function requireAdministrator(interaction) { if (isAdministrator(interaction)) return true; await interaction.reply({ content: 'You need the Aera Administrator role to use this command.', ephemeral: true }); return false; }
-
-async function getUserColumns() {
-  const [rows] = await pool.query('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION', ['users']);
-  return rows.map(row => row.COLUMN_NAME);
-}
+async function getUserColumns() { const [rows] = await pool.query('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION', ['users']); return rows.map(row => row.COLUMN_NAME); }
 function findColumn(columns, candidates) { for (const candidate of candidates) { const match = columns.find(column => column.toLowerCase() === candidate.toLowerCase()); if (match) return match; } return null; }
-async function lookupPlayer(search) {
-  const columns = await getUserColumns();
-  const nameColumn = findColumn(columns, ['username', 'userName', 'Name', 'name', 'User', 'user', 'login']);
-  if (!nameColumn) return null;
-  const idColumn = findColumn(columns, ['id', 'ID', 'UserID', 'userId']);
-  const levelColumn = findColumn(columns, ['level', 'Level', 'lvl']);
-  const onlineColumn = findColumn(columns, ['online', 'Online']);
-  const selected = [`\`${nameColumn}\` AS player_name`, idColumn ? `\`${idColumn}\` AS player_id` : 'NULL AS player_id', levelColumn ? `\`${levelColumn}\` AS player_level` : 'NULL AS player_level', onlineColumn ? `\`${onlineColumn}\` AS player_online` : 'NULL AS player_online'].join(', ');
-  const [rows] = await pool.query(`SELECT ${selected} FROM \`users\` WHERE \`${nameColumn}\` LIKE ? LIMIT 1`, [`%${search}%`]);
-  return rows[0] || null;
-}
+async function lookupPlayer(search) { const columns = await getUserColumns(); const nameColumn = findColumn(columns, ['username', 'userName', 'Name', 'name', 'User', 'user', 'login']); if (!nameColumn) return null; const idColumn = findColumn(columns, ['id', 'ID', 'UserID', 'userId']); const levelColumn = findColumn(columns, ['level', 'Level', 'lvl']); const onlineColumn = findColumn(columns, ['online', 'Online']); const selected = [`\`${nameColumn}\` AS player_name`, idColumn ? `\`${idColumn}\` AS player_id` : 'NULL AS player_id', levelColumn ? `\`${levelColumn}\` AS player_level` : 'NULL AS player_level', onlineColumn ? `\`${onlineColumn}\` AS player_online` : 'NULL AS player_online'].join(', '); const [rows] = await pool.query(`SELECT ${selected} FROM \`users\` WHERE \`${nameColumn}\` LIKE ? LIMIT 1`, [`%${search}%`]); return rows[0] || null; }
 async function getOnlineCount() { const [rows] = await pool.query('SELECT COUNT(*) AS count FROM users WHERE online = 1'); return Number(rows[0]?.count || 0); }
-
-client.once(Events.ClientReady, async ready => {
-  console.log(`[Aera Discord] Logged in as ${ready.user.tag}`);
-  try { await pool.query('SELECT 1'); console.log('[Aera Discord] MySQL connection OK.'); } catch (error) { console.error('[Aera Discord] MySQL connection failed:', error.message); }
-  console.log(`[Aera Discord] Moderator roles: ${moderatorRoleIds.join(', ') || 'permission fallback'}`);
-  console.log(`[Aera Discord] Administrator roles: ${administratorRoleIds.join(', ') || 'permission fallback'}`);
-});
-
-client.on(Events.InteractionCreate, async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-  try {
-    switch (interaction.commandName) {
-      case 'server': { const online = await getOnlineCount(); await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Server').setDescription('The Aera game server is online.').addFields({ name: 'Players Online', value: `**${online}**`, inline: true }).setTimestamp()] }); break; }
-      case 'players': { const online = await getOnlineCount(); await interaction.reply(`There are currently **${online}** players online.`); break; }
-      case 'player': { const search = interaction.options.getString('name', true); const player = await lookupPlayer(search); if (!player) { await interaction.reply({ content: `No Aera player matching **${search}** was found.`, ephemeral: true }); break; } const status = player.player_online === null || player.player_online === undefined ? 'Unknown' : Number(player.player_online) === 1 ? 'Online' : 'Offline'; const level = player.player_level === null || player.player_level === undefined ? 'Unknown' : String(player.player_level); await interaction.reply({ embeds: [new EmbedBuilder().setTitle(`Player: ${player.player_name}`).addFields({ name: 'Account ID', value: String(player.player_id ?? 'Unknown'), inline: true }, { name: 'Level', value: level, inline: true }, { name: 'Status', value: status, inline: true })] }); break; }
-      case 'ping': await interaction.reply(`Pong! **${client.ws.ping}ms**`); break;
-      case 'announce': { if (!(await requireAdministrator(interaction))) break; const message = interaction.options.getString('message', true); const embed = new EmbedBuilder().setTitle('Aera Announcement').setDescription(message).setFooter({ text: `Posted by ${interaction.user.tag}` }).setTimestamp(); await interaction.channel.send({ embeds: [embed] }); await interaction.reply({ content: 'Announcement posted.', ephemeral: true }); break; }
-      case 'kick': { if (!(await requireModerator(interaction))) break; const member = interaction.options.getMember('user'); const reason = interaction.options.getString('reason') || 'No reason provided.'; if (!member) { await interaction.reply({ content: 'That user is not a member of this server.', ephemeral: true }); break; } if (!member.kickable) { await interaction.reply({ content: 'I cannot kick that member. Check the bot role hierarchy.', ephemeral: true }); break; } await member.kick(reason); await interaction.reply(`Kicked **${member.user.tag}**. Reason: ${reason}`); break; }
-      case 'ban': { if (!(await requireModerator(interaction))) break; const member = interaction.options.getMember('user'); const reason = interaction.options.getString('reason') || 'No reason provided.'; if (!member) { await interaction.reply({ content: 'That user is not a member of this server.', ephemeral: true }); break; } if (!member.bannable) { await interaction.reply({ content: 'I cannot ban that member. Check the bot role hierarchy.', ephemeral: true }); break; } await member.ban({ reason, deleteMessageSeconds: 86400 }); await interaction.reply(`Banned **${member.user.tag}**. Reason: ${reason}`); break; }
-      case 'unban': { if (!(await requireModerator(interaction))) break; const userId = interaction.options.getString('user_id', true); const reason = interaction.options.getString('reason') || 'No reason provided.'; await interaction.guild.members.unban(userId, reason); await interaction.reply(`Unbanned **${userId}**.`); break; }
-      case 'timeout': { if (!(await requireModerator(interaction))) break; const member = interaction.options.getMember('user'); const minutes = interaction.options.getInteger('minutes', true); const reason = interaction.options.getString('reason') || 'No reason provided.'; if (!member) { await interaction.reply({ content: 'That user is not a member of this server.', ephemeral: true }); break; } if (!member.moderatable) { await interaction.reply({ content: 'I cannot timeout that member. Check the bot role hierarchy.', ephemeral: true }); break; } await member.timeout(minutes * 60 * 1000, reason); await interaction.reply(`Timed out **${member.user.tag}** for **${minutes} minutes**. Reason: ${reason}`); break; }
-      case 'clear': { if (!(await requireModerator(interaction))) break; const amount = interaction.options.getInteger('amount', true); const deleted = await interaction.channel.bulkDelete(amount, true); await interaction.reply({ content: `Deleted **${deleted.size}** messages.`, ephemeral: true }); break; }
-      case 'botstatus': { if (!(await requireAdministrator(interaction))) break; await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Discord Bot').addFields({ name: 'Discord', value: client.isReady() ? 'Connected' : 'Disconnected', inline: true }, { name: 'Latency', value: `${client.ws.ping}ms`, inline: true }, { name: 'Guilds', value: String(client.guilds.cache.size), inline: true }).setTimestamp()] }); break; }
-      default: break;
-    }
-  } catch (error) {
-    console.error(`[Aera Discord] Command ${interaction.commandName} failed:`, error);
-    const message = error?.code === 'ER_NO_SUCH_TABLE' ? 'The Aera users table is unavailable.' : 'The command could not be completed.';
-    if (interaction.replied || interaction.deferred) await interaction.followUp({ content: message, ephemeral: true }).catch(() => {}); else await interaction.reply({ content: message, ephemeral: true }).catch(() => {});
-  }
-});
-
-const statusPort = envNumber('BOT_STATUS_PORT', 5592);
-if (statusPort < 0 || statusPort >= 65536 || !Number.isInteger(statusPort)) throw new Error(`BOT_STATUS_PORT must be an integer from 0 to 65535. Received: ${statusPort}`);
-const shutdownToken = env('BOT_SHUTDOWN_TOKEN') || require('node:crypto').randomBytes(32).toString('hex');
+client.once(Events.ClientReady, async ready => { console.log(`[Aera Discord] Logged in as ${ready.user.tag}`); try { await pool.query('SELECT 1'); console.log('[Aera Discord] MySQL connection OK.'); } catch (error) { console.error('[Aera Discord] MySQL connection failed:', error.message); } console.log(`[Aera Discord] Moderator roles: ${moderatorRoleIds.join(', ') || 'permission fallback'}`); console.log(`[Aera Discord] Administrator roles: ${administratorRoleIds.join(', ') || 'permission fallback'}`); });
+client.on(Events.InteractionCreate, async interaction => { if (!interaction.isChatInputCommand()) return; try { switch (interaction.commandName) {
+case 'server': { const online = await getOnlineCount(); await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Server').setDescription('The Aera game server is online.').addFields({ name: 'Players Online', value: `**${online}**`, inline: true }).setTimestamp()] }); break; }
+case 'players': { const online = await getOnlineCount(); await interaction.reply(`There are currently **${online}** players online.`); break; }
+case 'player': { const search = interaction.options.getString('name', true); const player = await lookupPlayer(search); if (!player) { await interaction.reply({ content: `No Aera player matching **${search}** was found.`, ephemeral: true }); break; } const status = player.player_online === null || player.player_online === undefined ? 'Unknown' : Number(player.player_online) === 1 ? 'Online' : 'Offline'; const level = player.player_level === null || player.player_level === undefined ? 'Unknown' : String(player.player_level); await interaction.reply({ embeds: [new EmbedBuilder().setTitle(`Player: ${player.player_name}`).addFields({ name: 'Account ID', value: String(player.player_id ?? 'Unknown'), inline: true }, { name: 'Level', value: level, inline: true }, { name: 'Status', value: status, inline: true })] }); break; }
+case 'ping': await interaction.reply(`Pong! **${client.ws.ping}ms**`); break;
+case 'announce': { if (!(await requireAdministrator(interaction))) break; const message = interaction.options.getString('message', true); const embed = new EmbedBuilder().setTitle('Aera Announcement').setDescription(message).setFooter({ text: `Posted by ${interaction.user.tag}` }).setTimestamp(); await interaction.channel.send({ embeds: [embed] }); await interaction.reply({ content: 'Announcement posted.', ephemeral: true }); break; }
+case 'kick': { if (!(await requireModerator(interaction))) break; const member = interaction.options.getMember('user'); const reason = interaction.options.getString('reason') || 'No reason provided.'; if (!member) { await interaction.reply({ content: 'That user is not a member of this server.', ephemeral: true }); break; } if (!member.kickable) { await interaction.reply({ content: 'I cannot kick that member. Check the bot role hierarchy.', ephemeral: true }); break; } await member.kick(reason); await interaction.reply(`Kicked **${member.user.tag}**. Reason: ${reason}`); break; }
+case 'ban': { if (!(await requireModerator(interaction))) break; const member = interaction.options.getMember('user'); const reason = interaction.options.getString('reason') || 'No reason provided.'; if (!member) { await interaction.reply({ content: 'That user is not a member of this server.', ephemeral: true }); break; } if (!member.bannable) { await interaction.reply({ content: 'I cannot ban that member. Check the bot role hierarchy.', ephemeral: true }); break; } await member.ban({ reason, deleteMessageSeconds: 86400 }); await interaction.reply(`Banned **${member.user.tag}**. Reason: ${reason}`); break; }
+case 'unban': { if (!(await requireModerator(interaction))) break; const userId = interaction.options.getString('user_id', true); const reason = interaction.options.getString('reason') || 'No reason provided.'; await interaction.guild.members.unban(userId, reason); await interaction.reply(`Unbanned **${userId}**.`); break; }
+case 'timeout': { if (!(await requireModerator(interaction))) break; const member = interaction.options.getMember('user'); const minutes = interaction.options.getInteger('minutes', true); const reason = interaction.options.getString('reason') || 'No reason provided.'; if (!member) { await interaction.reply({ content: 'That user is not a member of this server.', ephemeral: true }); break; } if (!member.moderatable) { await interaction.reply({ content: 'I cannot timeout that member. Check the bot role hierarchy.', ephemeral: true }); break; } await member.timeout(minutes * 60 * 1000, reason); await interaction.reply(`Timed out **${member.user.tag}** for **${minutes} minutes**. Reason: ${reason}`); break; }
+case 'clear': { if (!(await requireModerator(interaction))) break; const amount = interaction.options.getInteger('amount', true); const deleted = await interaction.channel.bulkDelete(amount, true); await interaction.reply({ content: `Deleted **${deleted.size}** messages.`, ephemeral: true }); break; }
+case 'botstatus': { if (!(await requireAdministrator(interaction))) break; await interaction.reply({ embeds: [new EmbedBuilder().setTitle('Aera Discord Bot').addFields({ name: 'Discord', value: client.isReady() ? 'Connected' : 'Disconnected', inline: true }, { name: 'Latency', value: `${client.ws.ping}ms`, inline: true }, { name: 'Guilds', value: String(client.guilds.cache.size), inline: true }).setTimestamp()] }); break; }
+default: break; } } catch (error) { console.error(`[Aera Discord] Command ${interaction.commandName} failed:`, error); const message = error?.code === 'ER_NO_SUCH_TABLE' ? 'The Aera users table is unavailable.' : 'The command could not be completed.'; if (interaction.replied || interaction.deferred) await interaction.followUp({ content: message, ephemeral: true }).catch(() => {}); else await interaction.reply({ content: message, ephemeral: true }).catch(() => {}); } });
+const statusPort = envNumber('BOT_STATUS_PORT', 5592); if (statusPort < 0 || statusPort >= 65536 || !Number.isInteger(statusPort)) throw new Error(`BOT_STATUS_PORT must be an integer from 0 to 65535. Received: ${statusPort}`);
+const shutdownToken = env('BOT_SHUTDOWN_TOKEN') || crypto.randomBytes(32).toString('hex');
 const heartbeatFile = path.join(__dirname, '..', 'discord-bot-health.json');
 function writeHeartbeat() { try { fs.writeFileSync(heartbeatFile, JSON.stringify({ pid: process.pid, ok: true, discordReady: client.isReady(), timestamp: new Date().toISOString() }), 'utf8'); } catch (error) { console.error('[Aera Discord] Could not write health heartbeat:', error.message); } }
 function removeHeartbeat() { try { if (fs.existsSync(heartbeatFile)) fs.unlinkSync(heartbeatFile); } catch {} }
 let shuttingDown = false;
-function shutdown() {
-  if (shuttingDown) return;
-  shuttingDown = true;
-  clearInterval(heartbeatTimer);
-  removeHeartbeat();
-  try { statusServer.close(); } catch {}
-  try { client.destroy(); } catch {}
-  setTimeout(() => process.exit(0), 100).unref();
-}
-writeHeartbeat();
-const heartbeatTimer = setInterval(writeHeartbeat, 2000);
+function shutdown() { if (shuttingDown) return; shuttingDown = true; clearInterval(heartbeatTimer); removeHeartbeat(); try { statusServer.close(); } catch {} try { client.destroy(); } catch {} setTimeout(() => process.exit(0), 100).unref(); }
+writeHeartbeat(); const heartbeatTimer = setInterval(writeHeartbeat, 2000);
+function isLoopback(address) { return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1'; }
 const statusServer = http.createServer((req, res) => {
-  if (req.socket.remoteAddress !== '127.0.0.1' && req.socket.remoteAddress !== '::1') { res.writeHead(403); return res.end('Forbidden'); }
-  if (req.url === '/health') {
-    const payload = JSON.stringify({ ok: true, discordReady: client.isReady(), pid: process.pid, timestamp: new Date().toISOString() });
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload), 'Connection': 'close' });
-    return res.end(payload);
-  }
-  if (req.url === '/shutdown' && (req.method === 'POST' || req.method === 'GET')) {
-    const auth = req.headers['x-aera-shutdown-token'];
-    if (!auth || auth !== shutdownToken) { res.writeHead(401); return res.end('Unauthorized'); }
-    res.writeHead(202, { 'Content-Type': 'application/json', 'Connection': 'close' });
-    res.end(JSON.stringify({ ok: true, message: 'Shutdown requested.' }));
-    setImmediate(shutdown);
-    return;
-  }
+  if (!isLoopback(req.socket.remoteAddress)) { res.writeHead(403); return res.end('Forbidden'); }
+  if (req.url === '/health' && req.method === 'GET') { const payload = JSON.stringify({ ok: true, discordReady: client.isReady(), pid: process.pid, timestamp: new Date().toISOString() }); res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload), 'Connection': 'close' }); return res.end(payload); }
+  if (req.url === '/shutdown' && (req.method === 'POST' || req.method === 'GET')) { const auth = req.headers['x-aera-shutdown-token']; if (!auth || auth !== shutdownToken) { res.writeHead(401); return res.end('Unauthorized'); } res.writeHead(202, { 'Content-Type': 'application/json', 'Connection': 'close' }); res.end(JSON.stringify({ ok: true, message: 'Shutdown requested.' })); setTimeout(shutdown, 50).unref(); return; }
   res.writeHead(404); res.end('Not Found');
 });
 statusServer.listen(statusPort, '127.0.0.1', () => { console.log(`[Aera Discord] Health endpoint: 127.0.0.1:${statusPort}/health`); writeHeartbeat(); });
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('exit', removeHeartbeat);
+process.on('SIGINT', shutdown); process.on('SIGTERM', shutdown); process.on('exit', removeHeartbeat);
 client.login(discordToken).catch(error => { console.error('[Aera Discord] Discord login failed:', error); removeHeartbeat(); process.exitCode = 1; });
