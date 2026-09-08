@@ -1,0 +1,13 @@
+{
+  "java_classes": 173,
+  "java_routes": 94,
+  "java_tasks": 13,
+  "as3_requests": 105,
+  "source_only_parity_classes": 3,
+  "class_status_counts": {
+    "INTEGRATED": 10,
+    "PORTED": 160,
+    "SOURCE_ONLY_PARITY": 3
+  },
+  "as3_aliases": 25
+}

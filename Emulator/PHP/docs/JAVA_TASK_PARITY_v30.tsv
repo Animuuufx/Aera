@@ -1,0 +1,14 @@
+java_task	java_source	php_mapping	status	notes
+AdminCommandQueue	src/aqworlds/tasks/AdminCommandQueue.java	GameServer::pollAdminCommands	PORTED	2-second DB admin command polling and stale command handling.
+CancellableTask	src/aqworlds/tasks/CancellableTask.java	deadline/timestamp state in ClientSession/GameServer	INTEGRATED	PHP event loop cancels by clearing deadlines/records instead of ScheduledFuture.
+DamageOverTime	src/aqworlds/tasks/DamageOverTime.java	GameServer::processPlayerAurasAndDots + processMonsterDots	PORTED	Periodic player/monster DoT lifecycle.
+KickUser	src/aqworlds/tasks/KickUser.java	ClientSession::$kickAt + GameServer::tick	PORTED	logoutWarning plus delayed disconnect.
+MonsterRespawn	src/aqworlds/tasks/MonsterRespawn.java	GameServer::tick monster respawn path	PORTED	Restores mtls then sends respawnMon.
+ProcessControl	src/aqworlds/tasks/ProcessControl.java	GameServer restart/stop intent files + supervisor	PORTED	Intentional stop/restart markers distinguish watchdog behavior.
+Regeneration	src/aqworlds/tasks/Regeneration.java	GameServer::tick rest and monster regeneration	PORTED	Player and monster regeneration schedules are event-loop driven.
+RemoveAura	src/aqworlds/tasks/RemoveAura.java	GameServer aura expiry + ExtensionRouter timed aura helpers	PORTED	Expires player/monster auras, recalculates stats and emits aura- / Getup.
+Restart	src/aqworlds/tasks/Restart.java	GameServer::scheduleRestart/cancelRestart/tick	PORTED	Countdown warnings, logoutWarning and restart intent.
+ServerMessages	src/aqworlds/tasks/ServerMessages.java	GameServer::sendScheduledServerMessage	PORTED	Periodic random settings_messages broadcast.
+Shutdown	src/aqworlds/tasks/Shutdown.java	GameServer::scheduleShutdown/cancelShutdown/tick	PORTED	Safe countdown and intentional-stop lifecycle.
+WarpUser	src/aqworlds/tasks/WarpUser.java	ClientSession::$pvpExitAt/$pvpJoinAt + GameServer::tick	PORTED	Delayed PvP join/exit warp scheduling.
+WarzoneQueue	src/aqworlds/tasks/WarzoneQueue.java	ExtensionRouter::processPvpQueues/startPvpMatches	PORTED	5-second matchmaking queue processing and PVPI/PVPQueueCntr updates.

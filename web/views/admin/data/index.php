@@ -1,0 +1,3 @@
+<?php $title='Database';$heading='Database Manager';$subheading='Every table in the aera database is available here.';ob_start(); ?>
+<div class="panel"><div class="panel-title"><h2>All Tables</h2><span class="muted"><?= count($tables) ?> tables</span></div><div class="table-card-grid"><?php foreach($tables as $t): ?><a href="/admin/data/<?= e($t['TABLE_NAME']) ?>"><strong><?= e($t['TABLE_NAME']) ?></strong><span><?= e($t['ENGINE']??'') ?> · ~<?= number_format((int)$t['TABLE_ROWS']) ?> rows</span></a><?php endforeach; ?></div></div>
+<?php $content=ob_get_clean();require __DIR__.'/../../layouts/admin.php'; ?>

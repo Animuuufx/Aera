@@ -1,0 +1,3 @@
+<?php $title='Error '.$status; ob_start(); ?>
+<section class="error-page"><div class="empty-card"><span class="eyebrow">AERA FOUNDATION</span><h1><?= (int)$status ?></h1><h2><?= e($message ?? 'Something went wrong.') ?></h2><?php if(!empty($showSetup)): ?><p>The PHP front controller is working. Check the database configuration from setup.</p><a class="btn btn-gold" href="/setup">Open Setup</a><?php else: ?><a class="btn btn-gold" href="/">Return Home</a><?php endif; ?><?php if(!empty($errorRef)): ?><p class="muted">Error reference: <?= e($errorRef) ?></p><?php endif; ?><?php if(!empty($details)): ?><pre class="debug-box"><?= e($details) ?></pre><?php endif; ?></div></section>
+<?php $content=ob_get_clean(); require __DIR__.'/layouts/site.php'; ?>

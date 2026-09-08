@@ -1,0 +1,3 @@
+<?php $title=$post['Title']; ob_start(); $articleImage=!empty($post['Image'])?('/'.ltrim((string)$post['Image'],'/')):'/assets/images/news/news-update.jpg'; ?>
+<article class="article-page"><a class="back-link" href="/#news">← Back to news</a><div class="article-image" style="background-image:url('<?= e($articleImage) ?>')"></div><span class="eyebrow"><?= e(date('F j, Y',strtotime($post['PublishedAt']))) ?></span><h1><?= e($post['Title']) ?></h1><?php if($post['AuthorName']): ?><p class="byline">Posted by <?= e($post['AuthorName']) ?></p><?php endif; ?><div class="article-body"><?= nl2br(e($post['Body'])) ?></div></article>
+<?php $content=ob_get_clean(); require __DIR__.'/layouts/site.php'; ?>

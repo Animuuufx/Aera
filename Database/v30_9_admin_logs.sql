@@ -1,0 +1,27 @@
+-- Aera v30.9 - centralized admin panel audit trail
+CREATE TABLE IF NOT EXISTS `admin_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `AdminUserID` int(11) UNSIGNED DEFAULT NULL,
+  `AdminName` varchar(60) NOT NULL DEFAULT '',
+  `Method` varchar(10) NOT NULL,
+  `Path` varchar(255) NOT NULL,
+  `Action` varchar(96) NOT NULL DEFAULT '',
+  `Entity` varchar(96) DEFAULT NULL,
+  `EntityID` varchar(128) DEFAULT NULL,
+  `RequestData` mediumtext,
+  `FileData` text,
+  `IPAddress` varchar(45) DEFAULT NULL,
+  `UserAgent` varchar(255) DEFAULT NULL,
+  `IsBackground` tinyint(1) UNSIGNED NOT NULL DEFAULT 0,
+  `ResponseStatus` smallint(5) UNSIGNED DEFAULT NULL,
+  `DurationMs` int(10) UNSIGNED DEFAULT NULL,
+  `ErrorMessage` varchar(500) DEFAULT NULL,
+  `CreatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `CompletedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_logs_admin_created` (`AdminUserID`,`CreatedAt`),
+  KEY `idx_admin_logs_action_created` (`Action`,`CreatedAt`),
+  KEY `idx_admin_logs_path_created` (`Path`,`CreatedAt`),
+  KEY `idx_admin_logs_background_created` (`IsBackground`,`CreatedAt`),
+  CONSTRAINT `fk_admin_logs_user` FOREIGN KEY (`AdminUserID`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

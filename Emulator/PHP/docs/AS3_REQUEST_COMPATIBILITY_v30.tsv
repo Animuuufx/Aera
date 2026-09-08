@@ -1,0 +1,106 @@
+command	source_sites	route_origin	php_handler	status
+acceptQuest	Sources/Client/src/World.as:8634	JAVA_94	ExtensionRouter::acceptQuest	SUPPORTED
+addFriend	Sources/Client/src/World.as:9460	JAVA_94	ExtensionRouter::addFriend	SUPPORTED
+afk	Sources/Client/src/World.as:5336;Sources/Client/src/World.as:5345;Sources/Client/src/World.as:5355	JAVA_94	ExtensionRouter::afk	SUPPORTED
+aggroMon	Sources/Client/src/World.as:6765	JAVA_94	ExtensionRouter::aggro	SUPPORTED
+bankFromInv	Sources/Client/src/World.as:4257	JAVA_94	ExtensionRouter::bankMove	SUPPORTED
+bankSwapInv	Sources/Client/src/World.as:4313	JAVA_94	ExtensionRouter::bankSwap	SUPPORTED
+bankToInv	Sources/Client/src/World.as:4279	JAVA_94	ExtensionRouter::bankMove	SUPPORTED
+buyAuctionItem	Sources/Client/src/World.as:4583	JAVA_94	ExtensionRouter::buyAuction	SUPPORTED
+buyBagSlots	Sources/Client/src/World.as:5058	JAVA_94	ExtensionRouter::buySlots	SUPPORTED
+buyBankSlots	Sources/Client/src/World.as:5063	JAVA_94	ExtensionRouter::buySlots	SUPPORTED
+buyHouseSlots	Sources/Client/src/World.as:5068	JAVA_94	ExtensionRouter::buySlots	SUPPORTED
+buyItem	Sources/Client/src/World.as:4545;Sources/Client/src/World.as:4599	JAVA_94	ExtensionRouter::buyItem	SUPPORTED
+castt	Sources/Client/src/World.as:10130	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+cc	Sources/Client/src/Chat.as:728;Sources/Client/src/Chat2.as:1489	JAVA_94	ExtensionRouter::cannedChat	SUPPORTED
+changeArmorColor	Sources/Client/src/World.as:4330	JAVA_94	ExtensionRouter::changeArmorColor	SUPPORTED
+changeClass	Sources/Client/src/World.as:4744	CLIENT_ALIAS	ExtensionRouter::changeClass	SUPPORTED
+changeColor	Sources/Client/src/World.as:4325	JAVA_94	ExtensionRouter::changeColor	SUPPORTED
+cmd	Sources/Client/src/Chat.as:1463;Sources/Client/src/Chat.as:3089;Sources/Client/src/Chat.as:3123;Sources/Client/src/Chat2.as:1940;Sources/Client/src/Chat2.as:2781;Sources/Client/src/Chat2.as:2815;Sources/Client/src/Game.as:9617;Sources/Client/src/Game.as:9621;Sources/Client/src/Game.as:11490;Sources/Client/src/Game.as:11504;Sources/Client/src/MonsterMC.as:183;Sources/Client/src/MonsterMC.as:187;Sources/Client/src/World.as:2001;Sources/Client/src/World.as:2024;Sources/Client/src/World.as:4749;Sources/Client/src/World.as:5014;Sources/Client/src/World.as:5021;Sources/Client/src/World.as:9395;Sources/Client/src/World.as:9440;Sources/Client/src/World.as:9448;Sources/Client/src/liteAssets/draw/travelMenu.as:213;Sources/Client/src/mcOption.as:568;Sources/Client/src/mcOption.as:583;Sources/Client/src/mcOption.as:591;Sources/Client/src/mcOption.as:599;Sources/Client/src/mcOption.as:606;Sources/Client/src/mcOption.as:612;Sources/Client/src/mcOption.as:618;Sources/Client/src/mcOption.as:624;Sources/Client/src/mcOption.as:630;Sources/Client/src/mcOption.as:636;Sources/Client/src/mcOption.as:642;Sources/Client/src/mcOption.as:648;Sources/Client/src/mcOption.as:654;Sources/Client/src/mcOption.as:660	JAVA_94	ExtensionRouter::command	SUPPORTED
+da	Sources/Client/src/World.as:9623	JAVA_94	ExtensionRouter::duelReply	SUPPORTED
+dd	Sources/Client/src/World.as:9627	JAVA_94	ExtensionRouter::duelReply	SUPPORTED
+declineFriend	Sources/Client/src/World.as:9464	JAVA_94	ExtensionRouter::declineFriend	SUPPORTED
+deleteFriend	Sources/Client/src/World.as:9470	JAVA_94	ExtensionRouter::deleteFriend	SUPPORTED
+duel	Sources/Client/src/World.as:9616	JAVA_94	ExtensionRouter::duelInvite	SUPPORTED
+dungeonQueue	Sources/Client/src/World.as:10210	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+dungeonRejoin	Sources/Client/src/World.as:10218	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+dynamic	Sources/Client/src/Chat.as:1695;Sources/Client/src/Chat.as:1699;Sources/Client/src/Chat2.as:2172;Sources/Client/src/Chat2.as:2176	CLIENT_ALIAS	ExtensionRouter::dynamicChat	SUPPORTED
+emotea	Sources/Client/src/World.as:5299	JAVA_94	ExtensionRouter::emote	SUPPORTED
+enhanceItem	Sources/Client/src/World.as:4430	CLIENT_ALIAS	ExtensionRouter::enhanceItem	SUPPORTED
+enhanceItemLocal	Sources/Client/src/World.as:4473	JAVA_94	ExtensionRouter::enhanceItem	SUPPORTED
+enhanceItemShop	Sources/Client/src/World.as:4464	JAVA_94	ExtensionRouter::enhanceItem	SUPPORTED
+equipItem	Sources/Client/src/World.as:4712;Sources/Client/src/World.as:6400	JAVA_94	ExtensionRouter::equip	SUPPORTED
+fbCmd	Sources/Client/src/FBListener.as:76;Sources/Client/src/mcFBPassword.as:52	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+firstJoin	Sources/Client/src/Game.as:9604	JAVA_94	ExtensionRouter::firstJoin	SUPPORTED
+forceEquipItem	Sources/Client/src/World.as:4728	CLIENT_ALIAS	ExtensionRouter::equip	SUPPORTED
+geia	Sources/Client/src/World.as:4780	JAVA_94	ExtensionRouter::potionEffect	SUPPORTED
+getAdData	Sources/Client/src/World.as:5034	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+getAdReward	Sources/Client/src/World.as:5042	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+getApop	Sources/Client/src/World.as:8729	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+getDrop	Sources/Client/src/DFrame2MC.as:203;Sources/Client/src/liteAssets/draw/dEntry.as:234	JAVA_94	ExtensionRouter::getDrop	SUPPORTED
+getfriendlist	Sources/Client/src/World.as:5156	JAVA_94	ExtensionRouter::friends	SUPPORTED
+getMapItem	Sources/Client/src/World.as:8646	JAVA_94	ExtensionRouter::mapItem	SUPPORTED
+getQuests	Sources/Client/src/World.as:8657	JAVA_94	ExtensionRouter::getQuests	SUPPORTED
+getQuests2	Sources/Client/src/World.as:8788	CLIENT_ALIAS	ExtensionRouter::getQuests	SUPPORTED
+gp	Sources/Client/src/World.as:9106;Sources/Client/src/World.as:9110;Sources/Client/src/World.as:9118;Sources/Client/src/World.as:9370;Sources/Client/src/World.as:9375;Sources/Client/src/World.as:9380;Sources/Client/src/World.as:9385;Sources/Client/src/World.as:9392;Sources/Client/src/World.as:9404;Sources/Client/src/World.as:9414	JAVA_94	ExtensionRouter::party	SUPPORTED
+guild	Sources/Client/src/Chat.as:1704;Sources/Client/src/Chat.as:1723;Sources/Client/src/Chat2.as:2181;Sources/Client/src/Chat2.as:2200;Sources/Client/src/World.as:9475;Sources/Client/src/World.as:9482;Sources/Client/src/World.as:9488;Sources/Client/src/World.as:9493;Sources/Client/src/World.as:9500;Sources/Client/src/World.as:9504;Sources/Client/src/World.as:9510;Sources/Client/src/World.as:9517;Sources/Client/src/World.as:9523;Sources/Client/src/World.as:9530	JAVA_94	ExtensionRouter::guild	SUPPORTED
+hi	Sources/Client/src/mcOption.as:194	JAVA_94	ExtensionRouter::handle (direct response)	SUPPORTED
+house	Sources/Client/src/World.as:2225	JAVA_94	ExtensionRouter::house	SUPPORTED
+housesave	Sources/Client/src/World.as:3307	JAVA_94	ExtensionRouter::houseSave	SUPPORTED
+ia	Sources/Client/src/World.as:10114	JAVA_94	ExtensionRouter::interaction	SUPPORTED
+isModerator	Sources/Client/src/World.as:5189	JAVA_94	ExtensionRouter::isModerator	SUPPORTED
+loadAuction	Sources/Client/src/World.as:4351	JAVA_94	ExtensionRouter::loadAuction	SUPPORTED
+loadBank	Sources/Client/src/World.as:4340	JAVA_94	ExtensionRouter::loadBank	SUPPORTED
+loadFactions	Sources/Client/src/World.as:5078	CLIENT_ALIAS	ExtensionRouter::sendFactions	SUPPORTED
+loadFriendsList	Sources/Client/src/World.as:5073	CLIENT_ALIAS	ExtensionRouter::friends	SUPPORTED
+loadHairShop	Sources/Client/src/World.as:4408	JAVA_94	ExtensionRouter::hairShop	SUPPORTED
+loadHouseInventory	Sources/Client/src/World.as:2632	CLIENT_ALIAS	ExtensionRouter::sendHouseInventory	SUPPORTED
+loadOffer	Sources/Client/src/World.as:9811	JAVA_94	ExtensionRouter::tradeLoadOffer	SUPPORTED
+loadQuestStringData	Sources/Client/src/World.as:5053	CLIENT_ALIAS	ExtensionRouter::questStringData	SUPPORTED
+loadRetrieve	Sources/Client/src/World.as:4362	JAVA_94	ExtensionRouter::loadAuction	SUPPORTED
+loadShop	Sources/Client/src/World.as:4380	JAVA_94	ExtensionRouter::shop	SUPPORTED
+loadTitles	Sources/Client/src/mcTitles.as:46	JAVA_94	ExtensionRouter::titles	SUPPORTED
+loadWarVars	Sources/Client/src/World.as:5048	JAVA_94	ExtensionRouter::loadWar	SUPPORTED
+moveToCell	Sources/Client/src/World.as:1276	JAVA_94	ExtensionRouter::moveToCell	SUPPORTED
+mtcid	Sources/Client/src/World.as:1298	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+mv	Sources/Client/src/World.as:1625	JAVA_94	ExtensionRouter::move	SUPPORTED
+PVPIr	Sources/Client/src/World.as:9606;Sources/Client/src/World.as:9611	JAVA_94	ExtensionRouter::pvpReply	SUPPORTED
+PVPQr	Sources/Client/src/World.as:9536	JAVA_94	ExtensionRouter::pvpQueue	SUPPORTED
+redeemCode	Sources/Client/src/mcRedeem.as:35	JAVA_94	ExtensionRouter::redeem	SUPPORTED
+reloadShop	Sources/Client/src/World.as:4369	JAVA_94	ExtensionRouter::shop	SUPPORTED
+removeItem	Sources/Client/src/World.as:4691;Sources/Client/src/World.as:4695	JAVA_94	ExtensionRouter::removeItem	SUPPORTED
+removeTempItem	Sources/Client/src/World.as:4701	CLIENT_ALIAS	ExtensionRouter::removeTempItem	SUPPORTED
+requestFriend	Sources/Client/src/World.as:9453	JAVA_94	ExtensionRouter::requestFriend	SUPPORTED
+resPlayerTimed	Sources/Client/src/World.as:5231	JAVA_94	ExtensionRouter::restorePlayer	SUPPORTED
+restRequest	Sources/Client/src/World.as:5297	JAVA_94	ExtensionRouter::startRest	SUPPORTED
+retrieveAuctionItem	Sources/Client/src/LPFPanelBg5.as:319	JAVA_94	ExtensionRouter::retrieveAuction	SUPPORTED
+retrieveAuctionItems	Sources/Client/src/LPFPanelBg5.as:343	JAVA_94	ExtensionRouter::retrieveAuction	SUPPORTED
+retrieveInventory	Sources/Client/src/World.as:4320	JAVA_94	ExtensionRouter::inventory	SUPPORTED
+retrieveMonData	Sources/Client/src/World.as:5523	CLIENT_ALIAS	ExtensionRouter::retrieveMonsterData	SUPPORTED
+retrieveUserData	Sources/Client/src/World.as:4123	JAVA_94	ExtensionRouter::retrieveUserData	SUPPORTED
+retrieveUserDatas	Sources/Client/src/World.as:4128	JAVA_94	ExtensionRouter::retrieveUserData	SUPPORTED
+rewardReferral	Sources/Client/src/World.as:5027	CLIENT_ALIAS	ExtensionRouter::handle (direct response)	SUPPORTED
+searchAuction	Sources/Client/src/LPFPanelBg5.as:107	JAVA_94	ExtensionRouter::searchAuction	SUPPORTED
+sellAuctionItem	Sources/Client/src/LPFPanelBg5.as:229	JAVA_94	ExtensionRouter::sellAuction	SUPPORTED
+sellItem	Sources/Client/src/World.as:4658;Sources/Client/src/World.as:4668	JAVA_94	ExtensionRouter::sellItem	SUPPORTED
+serverUseItem	Sources/Client/src/World.as:4853;Sources/Client/src/World.as:4858;Sources/Client/src/World.as:10025;Sources/Client/src/World.as:10032;Sources/Client/src/World.as:10039;Sources/Client/src/World.as:10046	JAVA_94	ExtensionRouter::useItem	SUPPORTED
+setAchievement	Sources/Client/src/World.as:5116	JAVA_94	ExtensionRouter::setAchievement	SUPPORTED
+setHomeTown	Sources/Client/src/World.as:4212;Sources/Client/src/World.as:4218	CLIENT_ALIAS	ExtensionRouter::setHomeTown	SUPPORTED
+summonPet	Sources/Client/src/World.as:6404	CLIENT_ALIAS	ExtensionRouter::summonPet	SUPPORTED
+ti	Sources/Client/src/World.as:9784;Sources/Client/src/World.as:9788;Sources/Client/src/World.as:9792	JAVA_94	ExtensionRouter::tradeRequest	SUPPORTED
+tia	Sources/Client/src/World.as:9797	JAVA_94	ExtensionRouter::tradeAccept	SUPPORTED
+tid	Sources/Client/src/World.as:9799	JAVA_94	ExtensionRouter::tradeDecline	SUPPORTED
+tradeCancel	Sources/Client/src/LPFLayoutTrade.as:81	JAVA_94	ExtensionRouter::tradeCancel	SUPPORTED
+tradeDeal	Sources/Client/src/LPFLayoutTrade.as:164	JAVA_94	ExtensionRouter::tradeDeal	SUPPORTED
+tradeFromInv	Sources/Client/src/World.as:9827	JAVA_94	ExtensionRouter::tradeItems	SUPPORTED
+tradeLock	Sources/Client/src/LPFLayoutTrade.as:158	JAVA_94	ExtensionRouter::tradeLock	SUPPORTED
+tradeSwapInv	Sources/Client/src/World.as:9848	CLIENT_ALIAS	ExtensionRouter::tradeItems	SUPPORTED
+tradeToInv	Sources/Client/src/World.as:9832	JAVA_94	ExtensionRouter::tradeItems	SUPPORTED
+tradeUnlock	Sources/Client/src/LPFLayoutTrade.as:161	JAVA_94	ExtensionRouter::tradeLock	SUPPORTED
+tryQuestComplete	Sources/Client/src/World.as:8639	JAVA_94	ExtensionRouter::completeQuest	SUPPORTED
+unequipItem	Sources/Client/src/World.as:4737	JAVA_94	ExtensionRouter::equip	SUPPORTED
+unwearItem	Sources/Client/src/LPFLayoutInvShopEnh.as:563	JAVA_94	ExtensionRouter::unwearItem	SUPPORTED
+updateQuest	Sources/Client/src/World.as:4207	CLIENT_ALIAS	ExtensionRouter::updateQuestValue	SUPPORTED
+updateTitle	Sources/Client/src/mcTitles.as:102	JAVA_94	ExtensionRouter::updateTitle	SUPPORTED
+wearItem	Sources/Client/src/LPFLayoutInvShopEnh.as:578	JAVA_94	ExtensionRouter::wearItem	SUPPORTED
+spendStatPoints	Sources/Client/src/liteAssets/draw/statsPanel.as	AERA_STATPOINTS	ExtensionRouter::spendStatPoints	SUPPORTED

@@ -1,0 +1,4 @@
+<?php $title='Play'; ob_start(); ?>
+<section class="page-hero compact"><span class="eyebrow">AERA CLIENT</span><h1>Play Aera</h1><p>The original uploaded game SWFs are served unchanged from <code>/gamefiles</code>.</p></section>
+<section class="game-shell"><div class="game-frame"><object type="application/x-shockwave-flash" id="AeraGame" data="/gamefiles/Loader.swf" width="960" height="550"><param name="LOOP" value="false"><param name="SCALE" value="exactfit"><param name="allowScriptAccess" value="always"><param name="allowFullScreen" value="true"><param name="menu" value="false"><param name="flashvars" value=""></object><div class="flash-note"><b>Flash runtime required.</b> Modern browsers no longer run Flash directly; use your compatible launcher/runtime for the client.</div></div></section>
+<?php $content=ob_get_clean(); require __DIR__.'/layouts/site.php'; ?>

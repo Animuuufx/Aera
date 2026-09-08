@@ -1,0 +1,18 @@
+{
+  "source_swf": "Assets_20260731.swf",
+  "source_sha256": "54ab0ac2693fbdd0afa0491e122bdbc96d942c2e29bbce81d2f54d5e5243f8a0",
+  "exported_symbol_count": 933,
+  "skill_family_count": 59,
+  "skill_template_count": 314,
+  "aura_visual_count": 11,
+  "effect_visual_count": 306,
+  "kind_counts": {
+    "generic": 37,
+    "skill_visual": 314,
+    "icon": 133,
+    "embedded_visual": 116,
+    "effect_visual": 305,
+    "aura_visual": 11,
+    "sound": 17
+  }
+}

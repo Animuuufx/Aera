@@ -1,0 +1,95 @@
+command	java_class	java_source	java_param_count	java_json_responses	java_raw_responses	java_tables_observed	php_handler	status
+getAchievement	GetAchievement	src/aqworlds/requests/events/achievement/GetAchievement.java	1	getAchievement		users_achievements	ExtensionRouter::getAchievement	PORTED
+setAchievement	SetAchievement	src/aqworlds/requests/events/achievement/SetAchievement.java	3			a	ExtensionRouter::setAchievement	PORTED
+buyAuctionItem	BuyAuctionItem	src/aqworlds/requests/events/auction/BuyAuctionItem.java	1	buyAuctionItem,updateGoldCoins		items,users,users_items,users_markets,users_markets_logs	ExtensionRouter::buyAuction	PORTED
+loadAuction	LoadAuction	src/aqworlds/requests/events/auction/LoadAuction.java	0	loadAuction		users,users_markets	ExtensionRouter::loadAuction	PORTED
+loadRetrieve	LoadRetrieve	src/aqworlds/requests/events/auction/LoadRetrieve.java	0	loadRetrieve		users_markets	ExtensionRouter::loadAuction	PORTED
+retrieveAuctionItem	RetrieveAuctionItem	src/aqworlds/requests/events/auction/RetrieveAuctionItem.java	1	retrieveAuctionItem,updateGoldCoins		items,users,users_items,users_markets,users_markets_logs	ExtensionRouter::retrieveAuction	PORTED
+retrieveAuctionItems	RetrieveAuctionItems	src/aqworlds/requests/events/auction/RetrieveAuctionItems.java	0	retrieveAuctionItems,updateGoldCoins		items,users,users_items,users_markets,users_markets_logs	ExtensionRouter::retrieveAuction	PORTED
+searchAuction	SearchAuction	src/aqworlds/requests/events/auction/SearchAuction.java	1	loadAuction		items,users,users_markets	ExtensionRouter::searchAuction	PORTED
+sellAuctionItem	SellAuctionItem	src/aqworlds/requests/events/auction/SellAuctionItem.java	5	sellAuctionItem,updateGoldCoins		users,users_items,users_markets,users_markets_logs	ExtensionRouter::sellAuction	PORTED
+bankFromInv	BankFromInventory	src/aqworlds/requests/events/bank/BankFromInventory.java	2	bankFromInv		a,inventory,users_items	ExtensionRouter::bankMove	PORTED
+bankSwapInv	BankSwapInventory	src/aqworlds/requests/events/bank/BankSwapInventory.java	4	bankSwapInv		a,users_items	ExtensionRouter::bankSwap	PORTED
+bankToInv	BankToInventory	src/aqworlds/requests/events/bank/BankToInventory.java	2	bankToInv		a,items,users_items	ExtensionRouter::bankMove	PORTED
+loadBank	LoadBank	src/aqworlds/requests/events/bank/LoadBank.java	0	loadBank		a,users_items	ExtensionRouter::loadBank	PORTED
+cc	CannedChat	src/aqworlds/requests/events/chat/CannedChat.java	1		cc	a	ExtensionRouter::cannedChat	PORTED
+em	EmoteMessage	src/aqworlds/requests/events/chat/EmoteMessage.java	1		em	a	ExtensionRouter::emote	PORTED
+message	Message	src/aqworlds/requests/events/chat/Message.java	2		chatm,warning	posting	ExtensionRouter::message	PORTED
+whisper	Whisper	src/aqworlds/requests/events/chat/Whisper.java	2		#038:,&,whisper	a	ExtensionRouter::whisper	PORTED
+da	DuelAccept	src/aqworlds/requests/events/duel/DuelAccept.java	1	DuelEX		a	ExtensionRouter::duelReply	PORTED
+dd	DuelDecline	src/aqworlds/requests/events/duel/DuelDecline.java	1		server	a	ExtensionRouter::duelReply	PORTED
+duel	DuelInvite	src/aqworlds/requests/events/duel/DuelInvite.java	1	di	server	a	ExtensionRouter::duelInvite	PORTED
+enhanceItemLocal	EnhanceItemLocal	src/aqworlds/requests/events/enhance/EnhanceItemLocal.java	2	enhanceItemLocal		a,users_items	ExtensionRouter::enhanceItem	PORTED
+enhanceItemShop	EnhanceItemShop	src/aqworlds/requests/events/enhance/EnhanceItemShop.java	2	enhanceItemShop		a,users,users_items	ExtensionRouter::enhanceItem	PORTED
+addFriend	AddFriend	src/aqworlds/requests/events/friend/AddFriend.java	1	addFriend	server	a,users_friends	ExtensionRouter::addFriend	PORTED
+declineFriend	DeclineFriend	src/aqworlds/requests/events/friend/DeclineFriend.java	1		server	a	ExtensionRouter::declineFriend	PORTED
+deleteFriend	DeleteFriend	src/aqworlds/requests/events/friend/DeleteFriend.java	2	deleteFriend		a,users,users_friends	ExtensionRouter::deleteFriend	PORTED
+getfriendlist	GetFriendList	src/aqworlds/requests/events/friend/GetFriendList.java	0	friends		a	ExtensionRouter::friends	PORTED
+requestFriend	RequestFriend	src/aqworlds/requests/events/friend/RequestFriend.java	1	requestFriend	server	a	ExtensionRouter::requestFriend	PORTED
+guild	GuildCommand	src/aqworlds/requests/events/guild/GuildCommand.java	1			a	ExtensionRouter::guild	PORTED
+house	HouseJoin	src/aqworlds/requests/events/house/HouseJoin.java	1		warning	a,items,users,users_items	ExtensionRouter::house	PORTED
+housesave	HouseSave	src/aqworlds/requests/events/house/HouseSave.java	1			a,users	ExtensionRouter::houseSave	PORTED
+trap door	TrapDoor	src/aqworlds/requests/events/house/TrapDoor.java	1		trap door	a	ExtensionRouter::trapDoor	PORTED
+buyItem	BuyItem	src/aqworlds/requests/events/item/BuyItem.java	4	buyItem		a,items,shops_items,staff,users,users_items,wrong	ExtensionRouter::buyItem	PORTED
+equipItem	EquipItem	src/aqworlds/requests/events/item/EquipItem.java	1	equipItem	server	a,again,users,users_items	ExtensionRouter::equip	PORTED
+removeItem	RemoveItem	src/aqworlds/requests/events/item/RemoveItem.java	3	removeItem		a,users_items	ExtensionRouter::removeItem	PORTED
+sellItem	SellItem	src/aqworlds/requests/events/item/SellItem.java	3	sellItem	warning	a,users,users_items	ExtensionRouter::sellItem	PORTED
+serverUseItem	ServerUseItem	src/aqworlds/requests/events/item/ServerUseItem.java	2	popupmsg		a,users,users_achievements,users_titles	ExtensionRouter::useItem	PORTED
+unequipItem	UnequipItem	src/aqworlds/requests/events/item/UnequipItem.java	1	unequipItem		a,users_items	ExtensionRouter::equip	PORTED
+addLoadout	AddLoadOut	src/aqworlds/requests/events/loadouts/AddLoadOut.java	3	addLoadout	ar	users_outfits	ExtensionRouter::addLoadout	PORTED
+equipLoadout	EquipLoadOut	src/aqworlds/requests/events/loadouts/EquipLoadOut.java	3		server	equipment,users_items,users_outfits	ExtensionRouter::equipLoadout	PORTED
+removeLoadout	RemoveLoadOut	src/aqworlds/requests/events/loadouts/RemoveLoadOut.java	1	removeLoadout		users_outfits	ExtensionRouter::removeLoadout	PORTED
+getMapItem	GetMapItem	src/aqworlds/requests/events/map/GetMapItem.java	1			a	ExtensionRouter::mapItem	PORTED
+moveToCell	MoveToCell	src/aqworlds/requests/events/map/MoveToCell.java	2	ct	server,uotls	a	ExtensionRouter::moveToCell	PORTED
+aggroMon	AggroMonster	src/aqworlds/requests/events/monster/AggroMonster.java	0				ExtensionRouter::aggro	PORTED
+denyDrop	DenyDrop	src/aqworlds/requests/events/monster/DenyDrop.java	1	denyDrop			ExtensionRouter::denyDrop	PORTED
+getDrop	GetDrop	src/aqworlds/requests/events/monster/GetDrop.java	1	getDrop		a,users_items	ExtensionRouter::getDrop	PORTED
+gp	PartyCommand	src/aqworlds/requests/events/party/PartyCommand.java	1			a	ExtensionRouter::party	PORTED
+gar	Action	src/aqworlds/requests/events/player/Action.java	2	aura*,aura+,ct		effectively,infinite,items,users	ExtensionRouter::action	PORTED
+afk	Afk	src/aqworlds/requests/events/player/Afk.java	1		server,uotls	Keyboard	ExtensionRouter::afk	PORTED
+changeArmorColor	ChangeArmorColor	src/aqworlds/requests/events/player/ChangeArmorColor.java	3	changeArmorColor		a,users	ExtensionRouter::changeArmorColor	PORTED
+changeColor	ChangeColor	src/aqworlds/requests/events/player/ChangeColor.java	4	changeColor		a,users	ExtensionRouter::changeColor	PORTED
+emotea	EmoteAction	src/aqworlds/requests/events/player/EmoteAction.java	1		emotea	a	ExtensionRouter::emote	PORTED
+firstJoin	FirstJoin	src/aqworlds/requests/events/player/FirstJoin.java	0	cvu		a,servers	ExtensionRouter::firstJoin	PORTED
+genderSwapa	GenderSwap	src/aqworlds/requests/events/player/GenderSwap.java	0	genderSwap		a,users	ExtensionRouter::genderSwap	PORTED
+hi	Hi	src/aqworlds/requests/events/player/Hi.java	0		hi		ExtensionRouter::handle (direct response)	PORTED
+ia	Interaction	src/aqworlds/requests/events/player/Interaction.java	4	ia			ExtensionRouter::interaction	PORTED
+isModerator	IsModerator	src/aqworlds/requests/events/player/IsModerator.java	1	isModerator		a	ExtensionRouter::isModerator	PORTED
+mv	Move	src/aqworlds/requests/events/player/Move.java	3		uotls		ExtensionRouter::move	PORTED
+restRequest	Rest	src/aqworlds/requests/events/player/Rest.java	0				ExtensionRouter::startRest	PORTED
+resPlayerTimed	RestoreTimed	src/aqworlds/requests/events/player/RestoreTimed.java	0		resTimed		ExtensionRouter::restorePlayer	PORTED
+retrieveInventory	RetrieveInventory	src/aqworlds/requests/events/player/RetrieveInventory.java	0	coinsboost,cpboost,enhp,equipItem,gboost,loadInventoryBig,loadPrefs,repboost,updateFriend,xpboost	chatm,server	users,users_factions,users_friends,users_items,users_outfits	ExtensionRouter::inventory	PORTED
+retrieveUserData	RetrieveUserData	src/aqworlds/requests/events/player/RetrieveUserData.java	1	initUserData			ExtensionRouter::retrieveUserData	PORTED
+retrieveUserDatas	RetrieveUserDatas	src/aqworlds/requests/events/player/RetrieveUserDatas.java	0	initUserDatas			ExtensionRouter::retrieveUserData	PORTED
+cmd	UserCommand	src/aqworlds/requests/events/player/UserCommand.java	3	MoveToCellTrack,who	administrator,emotea,gm,logoutWarning,moderator,owner,rates,server,unmute,warning	again,servers,users	ExtensionRouter::command	PORTED
+geia	GetPotionEffect	src/aqworlds/requests/events/potion/GetPotionEffect.java	2	seia		a	ExtensionRouter::potionEffect	PORTED
+PVPQr	PvpQueueRequest	src/aqworlds/requests/events/pvp/PvpQueueRequest.java	1	PVPQ	server	a,the	ExtensionRouter::pvpQueue	PORTED
+PVPIr	PvpInviteReply	src/aqworlds/requests/events/pvp/PvpInviteReply.java	1	PVPQ			ExtensionRouter::pvpReply	PORTED
+acceptQuest	AcceptQuest	src/aqworlds/requests/events/quest/AcceptQuest.java	1	acceptQuest			ExtensionRouter::acceptQuest	PORTED
+getQuests	GetQuests	src/aqworlds/requests/events/quest/GetQuests.java	0	getQuests	server		ExtensionRouter::getQuests	PORTED
+tryQuestComplete	TryQuestComplete	src/aqworlds/requests/events/quest/TryQuestComplete.java	4	Wheel,ccqr	server,wheel	users_items,wars	ExtensionRouter::completeQuest	PORTED
+redeemCode	RedeemCode	src/aqworlds/requests/events/redeem/RedeemCode.java	1		server	a,redeems,users_redeems	ExtensionRouter::redeem	PORTED
+loadHairShop	LoadHairshop	src/aqworlds/requests/events/shop/LoadHairshop.java	1	loadHairShop		a	ExtensionRouter::hairShop	PORTED
+loadShop	LoadShop	src/aqworlds/requests/events/shop/LoadShop.java	1	loadShop	server	shops_items	ExtensionRouter::shop	PORTED
+reloadShop	LoadShop	src/aqworlds/requests/events/shop/LoadShop.java	1	loadShop	server	shops_items	ExtensionRouter::shop	PORTED
+buyBagSlots	BuyBagSlots	src/aqworlds/requests/events/slots/BuyBagSlots.java	1	buyBagSlots		a,users	ExtensionRouter::buySlots	PORTED
+buyBankSlots	BuyBankSlots	src/aqworlds/requests/events/slots/BuyBankSlots.java	1	buyBankSlots		a,users	ExtensionRouter::buySlots	PORTED
+buyHouseSlots	BuyHouseSlots	src/aqworlds/requests/events/slots/BuyHouseSlots.java	1	buyHouseSlots		a,users	ExtensionRouter::buySlots	PORTED
+buyLoadoutSlots	BuyLoadoutSlots	src/aqworlds/requests/events/slots/BuyLoadoutSlots.java	1	buyLoadoutSlots		a,users	ExtensionRouter::buySlots	PORTED
+loadTitles	LoadTitles	src/aqworlds/requests/events/titles/LoadTitles.java	0	loadTitles		titles,users_titles	ExtensionRouter::titles	PORTED
+updateTitle	UpdateTitle	src/aqworlds/requests/events/titles/UpdateTitle.java	2	updateTitle		title,users,users_titles	ExtensionRouter::updateTitle	PORTED
+loadOffer	LoadOffer	src/aqworlds/requests/events/trade/LoadOffer.java	0	loadOffer		users_items	ExtensionRouter::tradeLoadOffer	PORTED
+tia	TradeAccept	src/aqworlds/requests/events/trade/TradeAccept.java	1	startTrade			ExtensionRouter::tradeAccept	PORTED
+tradeCancel	TradeCancel	src/aqworlds/requests/events/trade/TradeCancel.java	1	tradeCancel	warning		ExtensionRouter::tradeCancel	PORTED
+tradeDeal	TradeDeal	src/aqworlds/requests/events/trade/TradeDeal.java	1	dropItem,getDrop,tradeDeal,updateGoldCoins	server	items,users,users_items,users_trades,users_trades_items	ExtensionRouter::tradeDeal	PORTED
+tid	TradeDecline	src/aqworlds/requests/events/trade/TradeDecline.java	1		server		ExtensionRouter::tradeDecline	PORTED
+tradeFromInv	TradeFromInventory	src/aqworlds/requests/events/trade/TradeFromInventory.java	4	loadOffer,tradeFromInv,tradeUnlock		inventory,users_items	ExtensionRouter::tradeItems	PORTED
+tradeLock	TradeLock	src/aqworlds/requests/events/trade/TradeLock.java	3	tradeLock		users	ExtensionRouter::tradeLock	PORTED
+ti	TradeRequest	src/aqworlds/requests/events/trade/TradeRequest.java	1	ti	server		ExtensionRouter::tradeRequest	PORTED
+tradeSwapInventory	TradeSwapInventory	src/aqworlds/requests/events/trade/TradeSwapInventory.java	5	loadOffer,tradeSwapInv,tradeToInv		users_items	ExtensionRouter::tradeItems	PORTED
+tradeToInv	TradeToInventory	src/aqworlds/requests/events/trade/TradeToInventory.java	3	tradeToInv,tradeUnlock		users_items	ExtensionRouter::tradeItems	PORTED
+tradeUnlock	TradeUnlock	src/aqworlds/requests/events/trade/TradeUnlock.java	1	tradeUnlock			ExtensionRouter::tradeLock	PORTED
+loadWarVars	LoadWarVars	src/aqworlds/requests/events/war/LoadWarVars.java	1	loadWarVars		a,wars	ExtensionRouter::loadWar	PORTED
+wearItem	WearItem	src/aqworlds/requests/events/wear/WearItem.java	1	wearItem		users_items	ExtensionRouter::wearItem	PORTED
+unwearItem	UnwearItem	src/aqworlds/requests/events/wear/UnwearItem.java	1	unwearItem		users_items	ExtensionRouter::unwearItem	PORTED
+wearLoadout	WearLoadOut	src/aqworlds/requests/events/wear/WearLoadOut.java	3	wearLoadout		users_outfits	ExtensionRouter::equipLoadout	PORTED

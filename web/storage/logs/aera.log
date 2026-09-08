@@ -1,0 +1,12 @@
+[2026-09-07 18:47:21] Error: Failed opening required 'C:\inetpub\wwwroot\AERA\web/routes/web.php' (include_path='.;C:\php\pear')
+#0 {main}
+
+[2026-09-07 18:47:21] Error: Failed opening required 'C:\inetpub\wwwroot\AERA\web/routes/web.php' (include_path='.;C:\php\pear')
+#0 {main}
+
+[2026-09-07 18:47:23] Error: Failed opening required 'C:\inetpub\wwwroot\AERA\web/routes/web.php' (include_path='.;C:\php\pear')
+#0 {main}
+
+[2026-09-07 18:47:23] Error: Failed opening required 'C:\inetpub\wwwroot\AERA\web/routes/web.php' (include_path='.;C:\php\pear')
+#0 {main}
+

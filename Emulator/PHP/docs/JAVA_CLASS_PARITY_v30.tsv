@@ -1,0 +1,174 @@
+java_source	java_class	php_mapping	status	notes
+src/aqworlds/Suck_MElator.java	Suck_MElator	GameServer + ExtensionRouter + Protocol	INTEGRATED	Extension lifecycle, SmartFox events, flood filtering, request dispatch and teardown are integrated into the PHP daemon.
+src/aqworlds/config/ConfigData.java	ConfigData	Config + config/emulator.php	PORTED	Runtime server/connection/anti-flood settings are represented in PHP config; Java Hikari-only pool knobs are PDO implementation-specific.
+src/aqworlds/db/Database.java	Database	Database	PORTED	PDO transaction/reconnect wrapper replaces JdbcHelper/Hikari.
+src/aqworlds/db/model/Achievement.java	Achievement	WorldRepository::$achievements	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Area.java	Area	WorldRepository::$maps/$mapItems	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Aura.java	Aura	WorldRepository::$auras/$skillsAuras	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/AuraEffects.java	AuraEffects	WorldRepository::$auraEffects/$auraEffectsByAura	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Cell.java	Cell	No active Java runtime use / no cells table in shipped schema	SOURCE_ONLY_PARITY	Class exists in the decompiled source but is not loaded/instantiated by the shipped Java runtime path and its table is absent from the shipped schema; no runtime behavior is missing.
+src/aqworlds/db/model/Class.java	Class	WorldRepository::$classes/$classSkills	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Enhancement.java	Enhancement	WorldRepository::$enhancements	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/EnhancementPattern.java	EnhancementPattern	WorldRepository::$patterns	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/GlobalDrop.java	GlobalDrop	WorldRepository::$globalDrops	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Hair.java	Hair	WorldRepository::$hairs	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Hairshop.java	Hairshop	WorldRepository::$hairshops/$hairshopItems	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/House.java	House	GameServer house metadata + ExtensionRouter::house	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Item.java	Item	WorldRepository::$items/$itemRequirements/$specialSkills	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/MapMonster.java	MapMonster	WorldRepository::$mapMonsterRows + mapMonsters	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Monster.java	Monster	WorldRepository::$monsters/$monsterDrops/$monsterSkills	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/MonsterDrop.java	MonsterDrop	WorldRepository::$monsterDrops	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/MonsterTitle.java	MonsterTitle	No active Java runtime reference / no monster-title table in shipped schema	SOURCE_ONLY_PARITY	Class exists in the decompiled source but is not loaded/instantiated by the shipped Java runtime path and its table is absent from the shipped schema; no runtime behavior is missing.
+src/aqworlds/db/model/Quest.java	Quest	WorldRepository::$quests/$questRequiredItems/$questRequirements/$questRewards	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/QuestRequirement.java	QuestRequirement	WorldRepository::$questRequirements	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/QuestReward.java	QuestReward	WorldRepository::$questRewards	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Shop.java	Shop	WorldRepository::$shops/$shopItems	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/ShopSeasonal.java	ShopSeasonal	WorldRepository::$seasonalShops	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Skill.java	Skill	WorldRepository::$skills/$classSkills/$specialSkills	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Title.java	Title	WorldRepository::$titles	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/db/model/Wheel.java	Wheel	WorldRepository::$wheels	PORTED	Java bean/result-set object is represented as cached associative rows/runtime metadata in PHP.
+src/aqworlds/requests/IRequest.java	IRequest	ExtensionRouter::handle	INTEGRATED	PHP dispatch uses methods rather than one IRequest object per route.
+src/aqworlds/requests/RequestExceptionMessage.java	RequestExceptionMessage	ExtensionRouter validation + GameServer::sendRaw/sendJson	INTEGRATED	Message/warning failures are emitted directly instead of Java checked exceptions.
+src/aqworlds/requests/RequestExceptionModal.java	RequestExceptionModal	ExtensionRouter popupmsg validation responses	INTEGRATED	Modal failures map to stock-client popupmsg JSON responses.
+src/aqworlds/requests/RequestManage.java	RequestManage	ExtensionRouter::$supported + ExtensionRouter::handle	PORTED	All 94 registered Java route names have explicit PHP switch branches.
+src/aqworlds/requests/events/achievement/GetAchievement.java	GetAchievement	ExtensionRouter::getAchievement [getAchievement]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/achievement/SetAchievement.java	SetAchievement	ExtensionRouter::setAchievement [setAchievement]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/BuyAuctionItem.java	BuyAuctionItem	ExtensionRouter::buyAuction [buyAuctionItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/LoadAuction.java	LoadAuction	ExtensionRouter::loadAuction [loadAuction]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/LoadRetrieve.java	LoadRetrieve	ExtensionRouter::loadAuction [loadRetrieve]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/RetrieveAuctionItem.java	RetrieveAuctionItem	ExtensionRouter::retrieveAuction [retrieveAuctionItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/RetrieveAuctionItems.java	RetrieveAuctionItems	ExtensionRouter::retrieveAuction [retrieveAuctionItems]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/SearchAuction.java	SearchAuction	ExtensionRouter::searchAuction [searchAuction]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/auction/SellAuctionItem.java	SellAuctionItem	ExtensionRouter::sellAuction [sellAuctionItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/bank/BankFromInventory.java	BankFromInventory	ExtensionRouter::bankMove [bankFromInv]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/bank/BankSwapInventory.java	BankSwapInventory	ExtensionRouter::bankSwap [bankSwapInv]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/bank/BankToInventory.java	BankToInventory	ExtensionRouter::bankMove [bankToInv]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/bank/LoadBank.java	LoadBank	ExtensionRouter::loadBank [loadBank]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/chat/CannedChat.java	CannedChat	ExtensionRouter::cannedChat [cc]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/chat/EmoteMessage.java	EmoteMessage	ExtensionRouter::emote [em]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/chat/Message.java	Message	ExtensionRouter::message [message]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/chat/Whisper.java	Whisper	ExtensionRouter::whisper [whisper]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/duel/DuelAccept.java	DuelAccept	ExtensionRouter::duelReply [da]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/duel/DuelDecline.java	DuelDecline	ExtensionRouter::duelReply [dd]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/duel/DuelInvite.java	DuelInvite	ExtensionRouter::duelInvite [duel]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/enhance/EnhanceItemLocal.java	EnhanceItemLocal	ExtensionRouter::enhanceItem [enhanceItemLocal]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/enhance/EnhanceItemShop.java	EnhanceItemShop	ExtensionRouter::enhanceItem [enhanceItemShop]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/friend/AddFriend.java	AddFriend	ExtensionRouter::addFriend [addFriend]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/friend/DeclineFriend.java	DeclineFriend	ExtensionRouter::declineFriend [declineFriend]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/friend/DeleteFriend.java	DeleteFriend	ExtensionRouter::deleteFriend [deleteFriend]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/friend/GetFriendList.java	GetFriendList	ExtensionRouter::friends [getfriendlist]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/friend/RequestFriend.java	RequestFriend	ExtensionRouter::requestFriend [requestFriend]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/guild/GuildAccept.java	GuildAccept	ExtensionRouter::guild [guild:ga]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildCommand.java	GuildCommand	ExtensionRouter::guild [guild]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/guild/GuildCreate.java	GuildCreate	ExtensionRouter::guild [guild:gc]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildDeclineInvite.java	GuildDeclineInvite	ExtensionRouter::guild [guild:gdi]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildDemote.java	GuildDemote	ExtensionRouter::guild [guild:gd]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildInvite.java	GuildInvite	ExtensionRouter::guild [guild:gi]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildMOTD.java	GuildMOTD	ExtensionRouter::guild [guild:motd]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildPromote.java	GuildPromote	ExtensionRouter::guild [guild:gp]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildRemove.java	GuildRemove	ExtensionRouter::guild [guild:gr]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/guild/GuildSlots.java	GuildSlots	ExtensionRouter::guild [guild:slots]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/house/HouseJoin.java	HouseJoin	ExtensionRouter::house [house]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/house/HouseSave.java	HouseSave	ExtensionRouter::houseSave [housesave]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/house/TrapDoor.java	TrapDoor	ExtensionRouter::trapDoor [trap door]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/item/BuyItem.java	BuyItem	ExtensionRouter::buyItem [buyItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/item/EquipItem.java	EquipItem	ExtensionRouter::equip [equipItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/item/RemoveItem.java	RemoveItem	ExtensionRouter::removeItem [removeItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/item/SellItem.java	SellItem	ExtensionRouter::sellItem [sellItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/item/ServerUseItem.java	ServerUseItem	ExtensionRouter::useItem [serverUseItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/item/UnequipItem.java	UnequipItem	ExtensionRouter::equip [unequipItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/loadouts/AddLoadOut.java	AddLoadOut	ExtensionRouter::addLoadout [addLoadout]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/loadouts/EquipLoadOut.java	EquipLoadOut	ExtensionRouter::equipLoadout [equipLoadout]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/loadouts/RemoveLoadOut.java	RemoveLoadOut	ExtensionRouter::removeLoadout [removeLoadout]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/map/GetMapItem.java	GetMapItem	ExtensionRouter::mapItem [getMapItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/map/MoveToCell.java	MoveToCell	ExtensionRouter::moveToCell [moveToCell]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/monster/AggroMonster.java	AggroMonster	ExtensionRouter::aggro [aggroMon]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/monster/DenyDrop.java	DenyDrop	ExtensionRouter::denyDrop [denyDrop]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/monster/GetDrop.java	GetDrop	ExtensionRouter::getDrop [getDrop]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/party/PartyAccept.java	PartyAccept	ExtensionRouter::party [gp:pa]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyAcceptSummon.java	PartyAcceptSummon	ExtensionRouter::party [gp:psa]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyCommand.java	PartyCommand	ExtensionRouter::party [gp]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/party/PartyDecline.java	PartyDecline	ExtensionRouter::party [gp:pd]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyDeclineSummon.java	PartyDeclineSummon	ExtensionRouter::party [gp:psd]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyInvite.java	PartyInvite	ExtensionRouter::party [gp:pi]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyKick.java	PartyKick	ExtensionRouter::party [gp:pk]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyLeave.java	PartyLeave	ExtensionRouter::party [gp:pl]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartyPromote.java	PartyPromote	ExtensionRouter::party [gp:pp]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/party/PartySummon.java	PartySummon	ExtensionRouter::party [gp:ps]	PORTED	Java sub-handler is represented inside the aggregate guild/party route exactly as RequestManage invokes it.
+src/aqworlds/requests/events/player/Action.java	Action	ExtensionRouter::action [gar]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/Afk.java	Afk	ExtensionRouter::afk [afk]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/ChangeArmorColor.java	ChangeArmorColor	ExtensionRouter::changeArmorColor [changeArmorColor]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/ChangeColor.java	ChangeColor	ExtensionRouter::changeColor [changeColor]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/DragonBuff.java	DragonBuff	ExtensionRouter::dragonBuff	SOURCE_ONLY_PARITY	"Legacy class is not registered by Java RequestManage; dormant raw ""Dragon Buff"" response behavior is retained as a PHP helper."
+src/aqworlds/requests/events/player/EmoteAction.java	EmoteAction	ExtensionRouter::emote [emotea]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/FirstJoin.java	FirstJoin	ExtensionRouter::firstJoin [firstJoin]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/GenderSwap.java	GenderSwap	ExtensionRouter::genderSwap [genderSwapa]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/Hi.java	Hi	ExtensionRouter::handle (direct response) [hi]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/Interaction.java	Interaction	ExtensionRouter::interaction [ia]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/IsModerator.java	IsModerator	ExtensionRouter::isModerator [isModerator]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/Move.java	Move	ExtensionRouter::move [mv]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/Rest.java	Rest	ExtensionRouter::startRest [restRequest]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/RestoreTimed.java	RestoreTimed	ExtensionRouter::restorePlayer [resPlayerTimed]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/RetrieveInventory.java	RetrieveInventory	ExtensionRouter::inventory [retrieveInventory]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/RetrieveUserData.java	RetrieveUserData	ExtensionRouter::retrieveUserData [retrieveUserData]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/RetrieveUserDatas.java	RetrieveUserDatas	ExtensionRouter::retrieveUserData [retrieveUserDatas]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/player/UserCommand.java	UserCommand	ExtensionRouter::command [cmd]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/potion/GetPotionEffect.java	GetPotionEffect	ExtensionRouter::potionEffect [geia]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/pvp/PvpInviteReply.java	PvpInviteReply	ExtensionRouter::pvpReply [PVPIr]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/pvp/PvpQueueRequest.java	PvpQueueRequest	ExtensionRouter::pvpQueue [PVPQr]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/quest/AcceptQuest.java	AcceptQuest	ExtensionRouter::acceptQuest [acceptQuest]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/quest/GetQuests.java	GetQuests	ExtensionRouter::getQuests [getQuests]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/quest/TryQuestComplete.java	TryQuestComplete	ExtensionRouter::completeQuest [tryQuestComplete]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/redeem/RedeemCode.java	RedeemCode	ExtensionRouter::redeem [redeemCode]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/shop/LoadHairshop.java	LoadHairshop	ExtensionRouter::hairShop [loadHairShop]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/shop/LoadShop.java	LoadShop	ExtensionRouter::shop [reloadShop]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/slots/BuyBagSlots.java	BuyBagSlots	ExtensionRouter::buySlots [buyBagSlots]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/slots/BuyBankSlots.java	BuyBankSlots	ExtensionRouter::buySlots [buyBankSlots]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/slots/BuyHouseSlots.java	BuyHouseSlots	ExtensionRouter::buySlots [buyHouseSlots]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/slots/BuyLoadoutSlots.java	BuyLoadoutSlots	ExtensionRouter::buySlots [buyLoadoutSlots]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/titles/LoadTitles.java	LoadTitles	ExtensionRouter::titles [loadTitles]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/titles/UpdateTitle.java	UpdateTitle	ExtensionRouter::updateTitle [updateTitle]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/LoadOffer.java	LoadOffer	ExtensionRouter::tradeLoadOffer [loadOffer]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeAccept.java	TradeAccept	ExtensionRouter::tradeAccept [tia]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeCancel.java	TradeCancel	ExtensionRouter::tradeCancel [tradeCancel]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeDeal.java	TradeDeal	ExtensionRouter::tradeDeal [tradeDeal]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeDecline.java	TradeDecline	ExtensionRouter::tradeDecline [tid]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeFromInventory.java	TradeFromInventory	ExtensionRouter::tradeItems [tradeFromInv]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeLock.java	TradeLock	ExtensionRouter::tradeLock [tradeLock]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeRequest.java	TradeRequest	ExtensionRouter::tradeRequest [ti]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeSwapInventory.java	TradeSwapInventory	ExtensionRouter::tradeItems [tradeSwapInventory]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeToInventory.java	TradeToInventory	ExtensionRouter::tradeItems [tradeToInv]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/trade/TradeUnlock.java	TradeUnlock	ExtensionRouter::tradeLock [tradeUnlock]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/war/LoadWarVars.java	LoadWarVars	ExtensionRouter::loadWar [loadWarVars]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/wear/UnwearItem.java	UnwearItem	ExtensionRouter::unwearItem [unwearItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/wear/WearItem.java	WearItem	ExtensionRouter::wearItem [wearItem]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/requests/events/wear/WearLoadOut.java	WearLoadOut	ExtensionRouter::equipLoadout [wearLoadout]	PORTED	Registered Java XT request behavior is implemented by an explicit PHP route.
+src/aqworlds/tasks/AdminCommandQueue.java	AdminCommandQueue	GameServer::pollAdminCommands	PORTED	2-second DB admin command polling and stale command handling.
+src/aqworlds/tasks/CancellableTask.java	CancellableTask	deadline/timestamp state in ClientSession/GameServer	INTEGRATED	PHP event loop cancels by clearing deadlines/records instead of ScheduledFuture.
+src/aqworlds/tasks/DamageOverTime.java	DamageOverTime	GameServer::processPlayerAurasAndDots + processMonsterDots	PORTED	Periodic player/monster DoT lifecycle.
+src/aqworlds/tasks/KickUser.java	KickUser	ClientSession::$kickAt + GameServer::tick	PORTED	logoutWarning plus delayed disconnect.
+src/aqworlds/tasks/MonsterRespawn.java	MonsterRespawn	GameServer::tick monster respawn path	PORTED	Restores mtls then sends respawnMon.
+src/aqworlds/tasks/ProcessControl.java	ProcessControl	GameServer restart/stop intent files + supervisor	PORTED	Intentional stop/restart markers distinguish watchdog behavior.
+src/aqworlds/tasks/Regeneration.java	Regeneration	GameServer::tick rest and monster regeneration	PORTED	Player and monster regeneration schedules are event-loop driven.
+src/aqworlds/tasks/RemoveAura.java	RemoveAura	GameServer aura expiry + ExtensionRouter timed aura helpers	PORTED	Expires player/monster auras, recalculates stats and emits aura- / Getup.
+src/aqworlds/tasks/Restart.java	Restart	GameServer::scheduleRestart/cancelRestart/tick	PORTED	Countdown warnings, logoutWarning and restart intent.
+src/aqworlds/tasks/ServerMessages.java	ServerMessages	GameServer::sendScheduledServerMessage	PORTED	Periodic random settings_messages broadcast.
+src/aqworlds/tasks/Shutdown.java	Shutdown	GameServer::scheduleShutdown/cancelShutdown/tick	PORTED	Safe countdown and intentional-stop lifecycle.
+src/aqworlds/tasks/WarpUser.java	WarpUser	ClientSession::$pvpExitAt/$pvpJoinAt + GameServer::tick	PORTED	Delayed PvP join/exit warp scheduling.
+src/aqworlds/tasks/WarzoneQueue.java	WarzoneQueue	ExtensionRouter::processPvpQueues/startPvpMatches	PORTED	5-second matchmaking queue processing and PVPI/PVPQueueCntr updates.
+src/aqworlds/utils/Achievement.java	Achievement	AchievementBits + ExtensionRouter achievement helpers	PORTED	Bit-field get/update behavior is ported.
+src/aqworlds/utils/Quests.java	Quests	ExtensionRouter questValue/updateQuestValue helpers	PORTED	Base-36 quest-string read/write semantics are ported.
+src/aqworlds/utils/Settings.java	Settings	SettingsCodec	PORTED	Preference bit mapping and allowed checks are ported.
+src/aqworlds/world/World.java	World	WorldRepository + WorldMath + GameServer + ExtensionRouter	INTEGRATED	DB cache, math, scheduling, send helpers, guild broadcasts and world lifecycle are split into focused PHP services.
+src/aqworlds/world/avatars/Damage.java	Damage	CombatMath + ExtensionRouter::action + GameServer monster combat	PORTED	Damage types, random damage, aura modifiers and equipment modifiers are server-authoritative.
+src/aqworlds/world/avatars/DamageType.java	DamageType	CombatMath string damage types	PORTED	none/miss/dodge/hit/crit semantics are represented as protocol strings.
+src/aqworlds/world/avatars/State.java	State	ClientSession + RoomState monster runtime + aura helpers	INTEGRATED	HP/MP/state/aura lifecycle is stored directly in PHP runtime structures.
+src/aqworlds/world/monsters/MonsterAttack.java	MonsterAttack	GameServer::monsterAttackTick + monsterSkillCast	PORTED	Basic attacks, target validation, cell checks, mana, skills, stun blocking and scheduling are ported.
+src/aqworlds/world/monsters/MonsterSkills.java	MonsterSkills	WorldRepository::$monsterSkills + GameServer::monsterSkillCast	PORTED	Monster skill assignments/casts are cached and executed by the tick loop.
+src/aqworlds/world/monsters/MonsterState.java	MonsterState	RoomState monster arrays + ExtensionRouter rewards/auras + GameServer respawn	INTEGRATED	Targets, death, rewards/drops, auras and restore behavior are integrated.
+src/aqworlds/world/party/Parties.java	Parties	ExtensionRouter::$parties	PORTED	Party registry and ID allocation are session runtime state.
+src/aqworlds/world/party/PartyInfo.java	PartyInfo	ExtensionRouter party member/owner records	PORTED	Owner/member/promotion/channel behavior is ported.
+src/aqworlds/world/rooms/Rooms.java	Rooms	GameServer room lifecycle + ExtensionRouter PvP scoring	PORTED	Public/private rooms, houses, limits, moveToArea, monster branches and PvP lifecycle are ported.
+src/aqworlds/world/users/Stats.java	Stats	StatsCalculator	PORTED	Core/innate/equipment/aura stats and client stat packet values are ported; known decompiler title-stat getter defect is corrected.
+src/aqworlds/world/users/UserState.java	UserState	ClientSession + ExtensionRouter/GameServer player aura/death state	INTEGRATED	Player death/restore/aura state is integrated into session/tick runtime.
+src/aqworlds/world/users/Users.java	Users	GameServer login/presence + ExtensionRouter user/inventory/reward/class helpers + StatsCalculator	INTEGRATED	Login, preferences, class skills, stats, inventory, rewards, guild/friends, quests, temporary items and kick behavior are split across PHP services.

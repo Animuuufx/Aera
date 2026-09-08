@@ -1,0 +1,31 @@
+java_setting	java_value	php_setting	php_value	status
+server.name	Aera	server_name	Aera	PORTED
+server.staff_only	false	staff_only	false	PORTED
+database.host	localhost	web/storage DB host / PDO config	runtime project DB setting	PORTED
+database.user	root	web/storage DB user / PDO config	runtime project DB setting	PORTED
+database.pass	123	web/storage DB password / PDO config	runtime project DB setting	PORTED
+database.port	9519	web/storage DB port / PDO config	runtime project DB setting	PORTED
+database.name	aera	web/storage DB database	aera	PORTED
+connection.max_connection	5	max_connections_per_ip	5	PORTED
+database.pool.maximum_pool_size	10	PDO persistent daemon connection	N/A	IMPLEMENTATION_SPECIFIC
+database.pool.connection_timeout	10000	PDO reconnect/error handling	N/A	IMPLEMENTATION_SPECIFIC
+database.pool.leak_detection_threshold	30000	PDO	N/A	IMPLEMENTATION_SPECIFIC
+database.pool.minimum_idle	5	PDO	N/A	IMPLEMENTATION_SPECIFIC
+database.pool.idle_timeout	120000	PDO	N/A	IMPLEMENTATION_SPECIFIC
+database.pool.max_lifetime	600000	PDO	N/A	IMPLEMENTATION_SPECIFIC
+database.cache_prep_stmts	true	PDO::ATTR_EMULATE_PREPARES=false	native prepared statements	EQUIVALENT
+database.prep_stmt_cache_size	250	PDO driver	driver-managed	IMPLEMENTATION_SPECIFIC
+database.prep_stmt_cache_sql_limit	2048	PDO driver	driver-managed	IMPLEMENTATION_SPECIFIC
+database.use_ssl	false	PDO DSN/project DB config	project-controlled	EQUIVALENT
+antiflood.message.tolerance	3	antiflood_message.tolerance	3	PORTED
+antiflood.message.warnings	3	antiflood_message.warnings	3	PORTED
+antiflood.message.minimum_milliseconds	1000	antiflood_message.minimum_milliseconds	1000	PORTED
+antiflood.message.max_repeated	3	antiflood_message.max_repeated	3	PORTED
+antiflood.request.tolerance	3	antiflood_request.tolerance	3	PORTED
+antiflood.request.warnings	3	antiflood_request.warnings	3	PORTED
+antiflood.request.minimum_milliseconds	500	antiflood_request.minimum_milliseconds	500	PORTED
+antiflood.request.counter_max	4	antiflood_request.counter_max	4	PORTED
+antiflood.request.repeat_enabled	true	antiflood_request.repeat_enabled	true	PORTED
+antiflood.request.max_repeated	2	antiflood_request.max_repeated	2	PORTED
+SmartFox socket port	9339 Java SmartFox runtime	port	5588 requested PHP endpoint	INTENTIONAL_RUNTIME_CHANGE
+SmartFox zone	zone_master	zone	zone_master	PORTED

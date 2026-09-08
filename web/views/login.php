@@ -1,0 +1,3 @@
+<?php $title='Login'; ob_start(); ?>
+<section class="form-page"><div class="form-card"><span class="eyebrow">WELCOME BACK</span><h1>Account login</h1><p>Staff accounts with Access 40+ are automatically sent to the admin panel.</p><form method="post" action="/login" class="stack-form"><?= csrf_field() ?><label>Username<input name="username" required autocomplete="username"></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button class="btn btn-gold wide" type="submit">Sign In</button></form><p class="form-foot">Need an account? <a href="/register">Register here</a>.</p></div></section>
+<?php $content=ob_get_clean(); require __DIR__.'/layouts/site.php'; ?>

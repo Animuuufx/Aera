@@ -1,0 +1,1 @@
+<?php $title='Not Found'; ob_start(); ?><section class="page-hero compact"><span class="eyebrow">404</span><h1>That page vanished into the void.</h1><p><a href="/">Return to Aera</a></p></section><?php $content=ob_get_clean(); require __DIR__.'/layouts/site.php'; ?>
