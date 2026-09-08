@@ -11,27 +11,29 @@ if errorlevel 1 (
 )
 
 echo ===============================================
-echo NightVaults Mail Server - Stalwart
+echo NightVaults Mail Server - MailEnable Standard
 echo ===============================================
 echo.
-echo This setup uses Stalwart Mail Server for Windows.
 echo Domain: nightvaults.com
 echo Mail hostname: mail.nightvaults.com
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-stalwart.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-mailenable.ps1"
 if errorlevel 1 (
     echo.
-    echo Stalwart setup did not complete.
+    echo MailEnable setup did not complete.
     pause
     exit /b 1
 )
 
 echo.
-echo Next steps:
-echo   1. Open http://127.0.0.1:8080/admin
-echo   2. Complete the Stalwart setup wizard.
-echo   3. Set the server hostname to mail.nightvaults.com.
-echo   4. Set the default mail domain to nightvaults.com.
-echo   5. Add the generated DNS records in Cloudflare.
+echo MailEnable installer launched successfully.
+echo Complete the MailEnable installation wizard, then configure:
+echo   SMTP: 25 / 465 / 587
+ echo   IMAP: 993
+ echo   Primary mail host: mail.nightvaults.com
+ echo   Primary domain: nightvaults.com
+ echo.
+echo Then run setup-mail-firewall.ps1 as Administrator.
+echo Add the DNS records from cloudflare-dns.md in Cloudflare.
 echo.
 pause
