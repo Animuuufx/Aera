@@ -1,0 +1,99 @@
+<?php
+$title='Discord Bot';
+$heading='Discord Bot';
+$subheading='Configure, monitor, deploy, and control the standalone Aera Discord bot.';
+$running=!empty($status['running']);
+$healthy=!empty($health['ok'])&&!empty($health['discordReady']);
+ob_start();
+?>
+<div class="discord-workspace" data-discord-workspace>
+  <div class="panel emu-toolbar">
+    <div class="server-status-large">
+      <span class="status-dot <?= $healthy?'online':($running?'online':'') ?>" data-discord-dot></span>
+      <div>
+        <h3>Aera Discord Bot</h3>
+        <p><span data-discord-process><?= $running?'Process running':'Process stopped' ?></span> · <span data-discord-health><?= $healthy?'Discord connected':'Discord offline' ?></span></p>
+        <?php if(!empty($status['pid'])): ?><p>PID <?= (int)$status['pid'] ?> · Health port <?= (int)($config['BOT_STATUS_PORT']??5592) ?></p><?php endif; ?>
+      </div>
+    </div>
+    <div class="emu-toolbar-actions">
+      <button class="btn btn-good" type="button" data-discord-control="start">Start</button>
+      <button class="btn btn-gold" type="button" data-discord-control="restart">Restart</button>
+      <button class="btn btn-danger" type="button" data-discord-control="stop">Stop</button>
+      <button class="btn btn-purple" type="button" data-discord-control="deploy">Deploy Commands</button>
+      <button class="btn btn-ghost" type="button" data-discord-refresh>Refresh</button>
+    </div>
+  </div>
+
+  <div class="admin-grid two">
+    <div class="panel">
+      <div class="panel-title"><h2>Bot Configuration</h2><span>Secrets stay outside the web root.</span></div>
+      <form method="post" action="/admin/discord/save" class="admin-form" data-discord-config-form>
+        <?= csrf_field() ?>
+        <div class="form-grid two">
+          <label>Discord Bot Token<input type="password" name="DISCORD_TOKEN" placeholder="<?= $configured?'Saved — leave blank to keep it':'Paste bot token' ?>" autocomplete="new-password"></label>
+          <label>Application / Client ID<input type="text" name="DISCORD_CLIENT_ID" value="<?= e($config['DISCORD_CLIENT_ID']??'') ?>" required></label>
+          <label>Guild / Server ID <span class="muted">optional</span><input type="text" name="DISCORD_GUILD_ID" value="<?= e($config['DISCORD_GUILD_ID']??'') ?>" placeholder="Leave blank for global commands"></label>
+          <label>Bot Health Port<input type="number" name="BOT_STATUS_PORT" min="1024" max="65535" value="<?= (int)($config['BOT_STATUS_PORT']??5592) ?>" required></label>
+        </div>
+        <h3>Database Connection</h3>
+        <div class="form-grid two">
+          <label>Host<input type="text" name="DB_HOST" value="<?= e($config['DB_HOST']??'127.0.0.1') ?>"></label>
+          <label>Port<input type="number" name="DB_PORT" value="<?= e($config['DB_PORT']??'3306') ?>"></label>
+          <label>Database<input type="text" name="DB_NAME" value="<?= e($config['DB_NAME']??'aera') ?>"></label>
+          <label>User<input type="text" name="DB_USER" value="<?= e($config['DB_USER']??'') ?>"></label>
+          <label>Password<input type="password" name="DB_PASSWORD" value="" placeholder="<?= !empty($config['DB_PASSWORD'])?'Saved — leave blank to keep it':'' ?>" autocomplete="new-password"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-good" type="submit">Save Configuration</button></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><h2>Installation &amp; Status</h2></div>
+      <div class="stat-grid">
+        <div class="stat-card"><span>Process</span><strong data-discord-stat-process><?= $running?'Running':'Stopped' ?></strong></div>
+        <div class="stat-card"><span>Discord</span><strong data-discord-stat-discord><?= $healthy?'Connected':'Offline' ?></strong></div>
+        <div class="stat-card"><span>Configured</span><strong><?= $configured?'Yes':'No' ?></strong></div>
+        <div class="stat-card"><span>Node</span><strong>20+</strong><small>required</small></div>
+      </div>
+      <div class="alert <?= $configured?'success':'warning' ?>">
+        <?= $configured?'The bot has a saved token and client ID. Start it when ready.':'Configure the Discord token and application/client ID, then save the settings.' ?>
+      </div>
+      <p class="muted">Bot application directory:</p>
+      <code><?= e($botRoot) ?></code>
+      <p class="muted" style="margin-top:14px">The Discord bot remains a separate Node.js process. This panel only controls it; it does not load Discord code into the PHP emulator.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><h2>Bot Log</h2><span data-discord-log-state><?= $running?'Live process output':'Last recorded output' ?></span></div>
+    <pre class="log-window emulator-terminal" data-discord-log><?= e($log) ?></pre>
+  </div>
+</div>
+<script>
+(function(){
+  const root=document.querySelector('[data-discord-workspace]'); if(!root)return;
+  const csrf=<?= json_encode(\Aera\Foundation\Csrf::token()) ?>;
+  const processEl=root.querySelector('[data-discord-process]');
+  const healthEl=root.querySelector('[data-discord-health]');
+  const dot=root.querySelector('[data-discord-dot]');
+  const statProcess=root.querySelector('[data-discord-stat-process]');
+  const statDiscord=root.querySelector('[data-discord-stat-discord]');
+  const log=root.querySelector('[data-discord-log]');
+  async function refresh(){
+    try{
+      const r=await fetch('/admin/discord/status',{headers:{'X-Requested-With':'XMLHttpRequest'}}); const d=await r.json();
+      const running=!!d.process?.running, healthy=!!d.health?.ok&&!!d.health?.discordReady;
+      processEl.textContent=running?'Process running':'Process stopped'; healthEl.textContent=healthy?'Discord connected':'Discord offline';
+      statProcess.textContent=running?'Running':'Stopped'; statDiscord.textContent=healthy?'Connected':'Offline'; dot.classList.toggle('online',healthy||running);
+    }catch(e){healthEl.textContent='Status unavailable';}
+  }
+  root.querySelectorAll('[data-discord-control]').forEach(btn=>btn.addEventListener('click',async()=>{
+    btn.disabled=true;
+    try{const body=new URLSearchParams({action:btn.dataset.discordControl,_csrf:csrf});const r=await fetch('/admin/discord/control',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},body});const d=await r.json();if(!d.ok)alert(d.message||'Discord bot action failed.');}catch(e){alert('Discord bot control request failed.');}finally{btn.disabled=false;await refresh();}
+  }));
+  root.querySelector('[data-discord-refresh]')?.addEventListener('click',refresh);
+  refresh();
+})();
+</script>
+<?php $content=ob_get_clean();require __DIR__.'/../../layouts/admin.php'; ?>
