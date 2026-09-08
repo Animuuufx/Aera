@@ -10,14 +10,16 @@ package
 
     /**
      * Small localhost bridge used by the Aera AIR launcher to publish the
-     * current character and session start time to Discord.
+     * current character, room, and session start time to Discord.
      */
     public class DiscordPresence
     {
         private static var socket:Socket;
         private static var pendingPlayer:String = "";
+        private static var pendingRoom:String = "";
         private static var startedAt:Number = 0;
         private static var lastSentPlayer:String = "";
+        private static var lastSentRoom:String = "";
         private static var lastSentAt:Number = 0;
         private static var pollTimer:Timer;
         private static var watchedGame:Object;
@@ -37,8 +39,10 @@ package
         public static function clear():void
         {
             pendingPlayer = "";
+            pendingRoom = "";
             startedAt = 0;
             lastSentPlayer = "";
+            lastSentRoom = "";
             lastSentAt = 0;
             if (pollTimer != null)
             {
@@ -68,11 +72,24 @@ package
                 if (watchedGame.world == null || watchedGame.world.myAvatar == null) return;
                 var data:Object = watchedGame.world.myAvatar.objData;
                 if (data == null || !("strUsername" in data)) return;
+
                 var player:String = String(data.strUsername);
                 if (player.length == 0) return;
 
+                var room:String = "";
+                if ("strMapName" in watchedGame.world && watchedGame.world.strMapName != null)
+                {
+                    room = String(watchedGame.world.strMapName);
+                }
+                if (room.length == 0 && "strAreaName" in watchedGame.world && watchedGame.world.strAreaName != null)
+                {
+                    room = String(watchedGame.world.strAreaName);
+                }
+                if (room.length == 0) room = "Aera";
+
                 if (startedAt <= 0) startedAt = Math.floor(new Date().time / 1000);
                 pendingPlayer = player;
+                pendingRoom = room;
                 connectAndSend();
             }
             catch (e:Error)
@@ -103,7 +120,7 @@ package
             if (socket.connected && pendingPlayer.length > 0)
             {
                 var now:Number = new Date().time;
-                if (pendingPlayer != lastSentPlayer || now - lastSentAt >= 10000)
+                if (pendingPlayer != lastSentPlayer || pendingRoom != lastSentRoom || now - lastSentAt >= 10000)
                 {
                     sendPresence();
                 }
@@ -121,6 +138,7 @@ package
             var payload:Object = {
                 type: "presence",
                 player: pendingPlayer,
+                room: pendingRoom,
                 start: startedAt
             };
             try
@@ -128,6 +146,7 @@ package
                 socket.writeUTFBytes(JSON.encode(payload) + "\n");
                 socket.flush();
                 lastSentPlayer = pendingPlayer;
+                lastSentRoom = pendingRoom;
                 lastSentAt = new Date().time;
             }
             catch (e:Error)
@@ -150,6 +169,7 @@ package
             }
             socket = null;
             lastSentPlayer = "";
+            lastSentRoom = "";
             lastSentAt = 0;
         }
     }
