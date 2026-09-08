@@ -37,16 +37,14 @@ final class WikiController
     }
 
     /**
-     * Resolve a bare /gamefiles/<filename>.swf URL to the actual asset.
-     * Some database rows store only a basename (for example NewWarriorB2.swf)
-     * while the real file lives under classes/M, classes/F, maps, mon, or an
-     * item subdirectory. Keeping the public URL stable means Ruffle can load
-     * every SWF without exposing the internal database path.
+     * Serves a SWF through PHP so the wiki preview does not depend on IIS
+     * resolving a non-existent /gamefiles/<basename>.swf URL. The database
+     * can store a basename while the real file may live in a nested folder.
      */
     public function gamefile(Request $r): never
     {
         $name = trim(str_replace('\\','/',(string)$r->input('file','')));
-        if ($name === '' || str_contains($name,'/') || str_contains($name,'..') || !preg_match('/\.swf$/i',$name)) {
+        if ($name === '' || str_contains($name,'..') || !preg_match('/\.swf$/i',$name)) {
             Response::abort(404,'SWF not found.');
         }
 
@@ -54,38 +52,58 @@ final class WikiController
         $root = rtrim($public,'/\\') . DIRECTORY_SEPARATOR . 'gamefiles';
         if (!is_dir($root)) Response::abort(404,'SWF directory not found.');
 
-        $requested = $root . DIRECTORY_SEPARATOR . $name;
-        if (is_file($requested)) {
-            Response::redirect('/gamefiles/' . rawurlencode($name), 302);
+        $namePath = trim(str_replace('\\','/',ltrim($name,'/')));
+        if (str_starts_with(strtolower($namePath),'gamefiles/')) {
+            $namePath = substr($namePath,10);
         }
 
+        // Only allow safe relative paths when a caller supplies a folder.
+        $candidate = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $namePath);
+        if (is_file($candidate)) {
+            return $this->streamSwf($candidate);
+        }
+
+        // If the database stores only a basename (e.g. NewWarriorB2.swf),
+        // search the complete gamefiles tree for an exact filename match.
+        $basename = basename($namePath);
+        $matches = [];
         try {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            $matches = [];
             foreach ($iterator as $file) {
-                if (!$file->isFile() || strcasecmp($file->getFilename(),$name)!==0) continue;
-                $matches[] = str_replace('\\','/',substr($file->getPathname(),strlen($public)+1));
-            }
-
-            // Prefer the male class asset when both class genders exist, then
-            // fall back to the first exact basename match.
-            usort($matches, static function(string $a,string $b): int {
-                $ap = str_starts_with(strtolower($a),'gamefiles/classes/m/') ? 0 : 1;
-                $bp = str_starts_with(strtolower($b),'gamefiles/classes/m/') ? 0 : 1;
-                return $ap <=> $bp ?: strcmp($a,$b);
-            });
-
-            if ($matches) {
-                Response::redirect('/' . ltrim($matches[0],'/'), 302);
+                if ($file->isFile() && strcasecmp($file->getFilename(),$basename) === 0) {
+                    $matches[] = $file->getPathname();
+                }
             }
         } catch(Throwable) {
-            // Treat filesystem lookup failures as a normal missing asset.
+            $matches = [];
         }
 
-        Response::abort(404,'SWF not found.');
+        if (!$matches) Response::abort(404,'SWF not found.');
+
+        // Prefer the male class asset for class SWFs when both genders exist.
+        usort($matches, static function(string $a,string $b): int {
+            $al = strtolower(str_replace('\\','/',$a));
+            $bl = strtolower(str_replace('\\','/',$b));
+            $ap = str_contains($al,'/gamefiles/classes/m/') ? 0 : 1;
+            $bp = str_contains($bl,'/gamefiles/classes/m/') ? 0 : 1;
+            return $ap <=> $bp ?: strcmp($al,$bl);
+        });
+
+        return $this->streamSwf($matches[0]);
+    }
+
+    private function streamSwf(string $path): never
+    {
+        if (!is_file($path) || !is_readable($path)) Response::abort(404,'SWF not found.');
+        header('Content-Type: application/x-shockwave-flash');
+        header('Content-Length: ' . (string)filesize($path));
+        header('Cache-Control: public, max-age=86400');
+        header('X-Content-Type-Options: nosniff');
+        readfile($path);
+        exit;
     }
 
     private function listing(string $type,string $q,int $page): array
