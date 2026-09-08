@@ -25,7 +25,7 @@ $success=Session::pull('success'); $error=Session::pull('error'); $warning=Sessi
     <button class="portal-mobile-toggle" type="button" data-mobile-nav aria-label="Toggle navigation">☰</button>
     <nav class="portal-nav" data-nav-menu>
       <a href="/rankings">Ranking</a>
-      <div class="portal-nav-drop"><button type="button">Resources <span>⌄</span></button><div><a href="/play">Play Aera</a><a href="/#news">News</a><a href="/account">Account</a></div></div>
+      <div class="portal-nav-drop"><button type="button">Resources <span>⌄</span></button><div><a href="/wiki">Wiki</a><a href="/play">Play Aera</a><a href="/#news">News</a><a href="/account">Account</a></div></div>
       <div class="portal-nav-drop"><button type="button">Support <span>⌄</span></button><div><a href="/character">Character Lookup</a></div></div>
       <?php if(!$user): ?><a href="/register">Register</a><?php endif; ?>
       <?php if($user && (int)$user['Access']>=40): ?><a href="/admin">Admin</a><?php endif; ?>
