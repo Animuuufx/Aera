@@ -1,5 +1,5 @@
 #requires -RunAsAdministrator
-# NightVaults / Stalwart firewall rules
+# NightVaults / MailEnable firewall rules
 
 $rules = @(
     @{ Name = 'NightVaults Mail SMTP 25';  Port = 25;  Description = 'Inbound SMTP server-to-server delivery.' },
@@ -18,5 +18,5 @@ foreach ($rule in $rules) {
     }
 }
 
-Write-Host 'Stalwart mail firewall rules are configured.' -ForegroundColor Green
-Write-Host 'Do not expose the Stalwart bootstrap/admin port 8080 to the public Internet.' -ForegroundColor Yellow
+Write-Host 'MailEnable mail firewall rules are configured.' -ForegroundColor Green
+Write-Host 'Do not expose IIS administration endpoints or unrelated ports to the public Internet.' -ForegroundColor Yellow
