@@ -3690,8 +3690,7 @@ import flash.system.ApplicationDomain;
                             tLeaf.auras = [];
                             break;
                         case "riftState":
-                            if (aeraRiftHUD == null) { aeraRiftHUD = new liteAssets.draw.riftHUD(this); addChild(aeraRiftHUD); }
-                            aeraRiftHUD.update(resObj);
+                            updateRiftHUD(resObj);
                             break;
                         case "uotls":
                             userTreeWrite(resObj.unm, resObj.o);
@@ -4934,6 +4933,22 @@ import flash.system.ApplicationDomain;
                 chatF.rootClass = this;
                 intChatMode = 0;
             }
+        }
+
+        private function updateRiftHUD(state:Object):void
+        {
+            if (aeraRiftHUD == null)
+            {
+                aeraRiftHUD = new liteAssets.draw.riftHUD(sendRiftCommand);
+                addChild(aeraRiftHUD);
+            }
+            aeraRiftHUD.update(state);
+        }
+
+        private function sendRiftCommand(command:String):void
+        {
+            if (sfc == null || world == null) return;
+            sfc.sendXtMessage("zm", "cmd", ["rift", command], "str", world.curRoom);
         }
 
         public static function gTrace(_arg_1:*):*

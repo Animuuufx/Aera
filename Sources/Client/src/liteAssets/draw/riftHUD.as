@@ -8,12 +8,12 @@ package liteAssets.draw
     /** Server-owned progress; buttons only request travel or material turn-in. */
     public class riftHUD extends Sprite
     {
-        private var rootGame:Object;
+        private var sendCommand:Function;
         private var label:TextField = new TextField();
         private var bar:Sprite = new Sprite();
-        public function riftHUD(game:Object)
+        public function riftHUD(commandSender:Function)
         {
-            rootGame=game;
+            sendCommand=commandSender;
             graphics.beginFill(0x111224,0.94);graphics.drawRoundRect(0,0,360,106,10);graphics.endFill();
             label.defaultTextFormat=new TextFormat("Arial",12,0xFFFFFF);
             label.width=350;label.height=70;label.x=8;label.y=5;label.selectable=false;
@@ -27,7 +27,7 @@ package liteAssets.draw
             var t:TextField=new TextField();t.defaultTextFormat=new TextFormat("Arial",12,0xE7C277,true);
             t.text=caption;t.width=175;t.height=20;t.mouseEnabled=false;b.addChild(t);
             b.addEventListener(MouseEvent.CLICK,function(e:MouseEvent):void {
-                rootGame.sfc.sendXtMessage("zm","cmd",["rift",command],"str",rootGame.world.curRoom);
+                if (sendCommand != null) sendCommand(command);
             });addChild(b);
         }
         public function update(state:Object):void
