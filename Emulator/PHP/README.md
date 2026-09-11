@@ -1,5 +1,8 @@
 # Aera PHP Emulator v30
 
+Aera Rifts adds shared dynamic world events, mutations, contribution rewards,
+and a Rift Shard shop. See [setup and operations](docs/AERA_RIFTS.md).
+
 v30 completes the full Java/PHP runtime audit: 173 Java classes accounted for, 94/94 Java RequestManage routes, 13/13 Java tasks, 104/104 stock-AS3 requests, schema/config/task/client-contract auditing, and semantic request tracing.
 
 Run `php bin/selftest.php` and `php bin/audit.php` before deployment.

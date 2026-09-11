@@ -2524,6 +2524,11 @@ package
                                 xtArr.push(params.slice(2).join(" "));
                             }
                             break;
+                        case "rift":
+                            cmd = "cmd";
+                            xtArr.push("rift");
+                            xtArr.push(params.length > 1 ? params[1] : "status");
+                            break;
                         case "tfer":
                             if (((((!(typeof(params[1]) == "undefined")) && (params[1].length > 0)) && (!(typeof(params[2]) == "undefined"))) && (params[2].length > 0)))
                             {

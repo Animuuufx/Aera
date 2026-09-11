@@ -25,6 +25,7 @@ final class GameServer
     private WorldMath $math;
     private StatsCalculator $statsCalculator;
     private CombatMath $combat;
+    public ?RiftManager $rifts=null;
 
     public function __construct(private Config $config, private Database $db, private Logger $log, private WorldRepository $world)
     {
@@ -35,6 +36,7 @@ final class GameServer
         $this->combat=new CombatMath($db,$world);
         $this->requestTrace=new RequestTrace($db,$world);
         $this->router=new ExtensionRouter($this,$db,$log,$world,$config);
+        $this->rifts=new RiftManager($this,$db,$world,$config,$log);
     }
 
     public function run(): void
@@ -44,6 +46,9 @@ final class GameServer
         $this->server=@stream_socket_server("tcp://{$host}:{$port}",$errno,$errstr,STREAM_SERVER_BIND|STREAM_SERVER_LISTEN);
         if(!is_resource($this->server)) throw new \RuntimeException("Could not bind {$host}:{$port}: {$errstr} ({$errno})");
         stream_set_blocking($this->server,false);
+        // Recover Rift state only after owning the game port; a duplicate launch
+        // that fails to bind must not interrupt the running server's encounter.
+        $this->rifts?->recoverStartup();
 
         // Local admin-console bridge. The public browser never sees this port;
         // IIS proxies it to authenticated administrators using Server-Sent Events.
@@ -339,6 +344,7 @@ final class GameServer
 
     private function joinRoomState(ClientSession $c,RoomState $room,string $frame,string $pad,string $base): bool
     {
+        $this->rifts?->attach($room);
         $map=$room->map;
         $oldRoom=$this->currentRoom($c);
         // Java Rooms.checkLimits rejects explicit attempts to join the room the
@@ -365,6 +371,7 @@ final class GameServer
         }
         $this->write($c,Protocol::sys('joinOK',$room->id,"<pid id='{$c->sfsUserId}'/><uLs>{$ul}</uLs>"));
         $this->sendMoveToArea($c,$room);$this->sendRaw($c,['server','You joined "'.$room->name.'"!']);
+        if($this->rifts)$this->sendJson($c,$this->rifts->status());
         try{$this->db->run('UPDATE users SET LastArea=? WHERE id=?',[$base.'|'.$frame.'|'.$pad,$c->dbId]);}catch(Throwable){}
         foreach($room->clients as $other){if($other!==$c)$this->sendJson($other,['cmd'=>'uotls','o'=>$this->userProps($c),'unm'=>$c->username]);}
         return true;
@@ -409,6 +416,11 @@ final class GameServer
     public function currentRoom(ClientSession $c): ?RoomState { return $this->rooms[$c->roomId]??null; }
     public function roomById(int $id): ?RoomState { return $this->rooms[$id]??null; }
     public function clients(): array { return $this->clients; }
+    public function rooms(): array { return $this->rooms; }
+    public function refreshRiftRoom(RoomState $room): void
+    {
+        foreach($room->clients as $c){$c->targetMonster=null;if($c->hp>0)$c->state=1;$this->sendMoveToArea($c,$room);}
+    }
     public function findUser(string $name): ?ClientSession { foreach($this->clients as $c)if($c->authenticated&&strcasecmp($c->username,$name)===0)return $c;return null; }
     public function findUserBySfsId(int $id): ?ClientSession { foreach($this->clients as $c)if($c->authenticated&&$c->sfsUserId===$id)return $c;return null; }
     public function findUserByDbId(int $id): ?ClientSession { foreach($this->clients as $c)if($c->authenticated&&$c->dbId===$id)return $c;return null; }
@@ -554,17 +566,18 @@ final class GameServer
         foreach($this->rooms as $room){
             if(($room->meta['pvp']['done']??false)===true)continue;
             foreach($room->monsters as $id=>&$m){
-                if($m['state']===0 && $m['respawnAt']>0 && $now>=$m['respawnAt']){
+                if(($m['riftRole']??'')!=='commander' && $m['state']===0 && $m['respawnAt']>0 && $now>=$m['respawnAt']){
                     $m['HP']=$m['HPMax'];$m['MP']=$m['MPMax'];$m['state']=1;$m['targets']=[];$m['auras']=[];$m['dots']=[];$m['skillCooldowns']=[];$m['respawnAt']=0.0;$m['lastAttack']=0.0;$m['lastCombat']=0.0;$m['lastRegen']=$now;
                     $this->broadcastJson(['cmd'=>'mtls','id'=>$id,'o'=>['intState'=>1,'intHP'=>$m['HP'],'intMP'=>$m['MP'],'intSP'=>100]],$room);
                     $this->broadcastRaw(['respawnMon',(string)$id],$room);
                 }
                 if($m['state']!==0)$this->processMonsterDots($room,$m,$id,$now);
                 $this->expireMonsterAuras($room,$m,$id,$now);
-                if($m['state']!==0 && !$m['targets'] && $m['HP']<$m['HPMax'] && ($now-$m['lastCombat'])>=(float)$this->config->get('monster_regen_interval',3.0) && ($now-$m['lastRegen'])>=(float)$this->config->get('monster_regen_interval',3.0)){$heal=max(1,(int)round($m['HPMax']*(float)$this->config->get('monster_regen_percent',0.05)));$m['HP']=min($m['HPMax'],$m['HP']+$heal);$m['lastRegen']=$now;$this->broadcastJson(['cmd'=>'mtls','id'=>$id,'o'=>['intHP'=>$m['HP'],'intHPMax'=>$m['HPMax'],'intMP'=>$m['MP'],'intMPMax'=>$m['MPMax'],'intState'=>$m['state']]],$room);}
+                if(($m['riftRole']??'')!=='commander' && $m['state']!==0 && !$m['targets'] && $m['HP']<$m['HPMax'] && ($now-$m['lastCombat'])>=(float)$this->config->get('monster_regen_interval',3.0) && ($now-$m['lastRegen'])>=(float)$this->config->get('monster_regen_interval',3.0)){$heal=max(1,(int)round($m['HPMax']*(float)$this->config->get('monster_regen_percent',0.05)));$m['HP']=min($m['HPMax'],$m['HP']+$heal);$m['lastRegen']=$now;$this->broadcastJson(['cmd'=>'mtls','id'=>$id,'o'=>['intHP'=>$m['HP'],'intHPMax'=>$m['HPMax'],'intMP'=>$m['MP'],'intMPMax'=>$m['MPMax'],'intState'=>$m['state']]],$room);}
                 if($m['state']!==0 && $m['targets'])$this->monsterAttackTick($room,$m,$now);
             }unset($m);
         }
+        $this->rifts?->tick($now);
         if($now-$this->lastCommandPoll>=(float)$this->config->get('admin_command_poll_seconds',2.0)){$this->lastCommandPoll=$now;$this->pollAdminCommands();}
         if($now-$this->lastServerMessageAt>=(float)$this->config->get('server_message_interval_seconds',1800)){$this->lastServerMessageAt=$now;$this->sendScheduledServerMessage();}
         if($now-$this->lastWarzoneTick>=(float)$this->config->get('warzone_queue_interval_seconds',5.0)){$this->lastWarzoneTick=$now;$this->router->processPvpQueues();}
@@ -615,7 +628,7 @@ final class GameServer
 
     private function processMonsterDots(RoomState $room,array &$m,int $monMapId,float $now): void
     {
-        foreach(array_keys((array)($m['dots']??[])) as $auraId){$dot=$m['dots'][$auraId]??null;if(!is_array($dot))continue;if((float)($dot['expiresAt']??0)>0&&(float)$dot['expiresAt']<=$now){unset($m['dots'][$auraId]);continue;}if((float)($dot['nextTick']??PHP_FLOAT_MAX)>$now)continue;$raw=(int)($dot['damage']??0);if($raw===0){unset($m['dots'][$auraId]);continue;}$mag=max(1,abs($raw));$amount=random_int(1,$mag);if($raw<0)$amount*=-1;if($amount>0)$amount=$this->combat->monsterDotIncoming($amount,(array)($m['auras']??[]),$now);if($amount>=0)$m['HP']=max(0,(int)$m['HP']-$amount);else$m['HP']=min((int)$m['HPMax'],(int)$m['HP']-$amount);$action=['hp'=>$amount,'cInf'=>(string)($dot['from']??''),'tInf'=>'m:'.$monMapId,'typ'=>'dot'];$packet=['cmd'=>'ct','m'=>[(string)$monMapId=>['intHP'=>$m['HP'],'intHPMax'=>$m['HPMax'],'intMP'=>$m['MP'],'intMPMax'=>$m['MPMax'],'intState'=>$m['HP']<=0?0:$m['state'],'targets'=>array_map('intval',array_keys((array)$m['targets']))]],'sara'=>[['actionResult'=>$action,'iRes'=>1]]];if($m['HP']<=0){$m['state']=0;$m['respawnAt']=$now+max(1,(int)$m['Respawn']);$m['auras']=[];$m['dots']=[];$p=[];foreach(array_keys((array)$m['targets']) as $sid){$member=$room->clients[(int)$sid]??null;if($member&&$member->hp>0)$p[$member->username]=['intState'=>1];}if($p)$packet['p']=$p;$this->router->rewardMonsterParticipants($room,$m);$this->broadcastJson($packet,$room);return;}$this->broadcastJson($packet,$room);if(isset($m['dots'][$auraId]))$m['dots'][$auraId]['nextTick']=$now+2.0;}
+        foreach(array_keys((array)($m['dots']??[])) as $auraId){$dot=$m['dots'][$auraId]??null;if(!is_array($dot))continue;if((float)($dot['expiresAt']??0)>0&&(float)$dot['expiresAt']<=$now){unset($m['dots'][$auraId]);continue;}if((float)($dot['nextTick']??PHP_FLOAT_MAX)>$now)continue;$raw=(int)($dot['damage']??0);if($raw===0){unset($m['dots'][$auraId]);continue;}$mag=max(1,abs($raw));$amount=random_int(1,$mag);if($raw<0)$amount*=-1;if($amount>0)$amount=$this->combat->monsterDotIncoming($amount,(array)($m['auras']??[]),$now);if($amount>0){$from=(string)($dot['from']??'');$owner=preg_match('/^p:(\d+)$/D',$from,$match)?$this->findUserBySfsId((int)$match[1]):null;$this->rifts?->hit($owner,$m,$amount,(int)($dot['riftUserId']??0));}if($amount>=0)$m['HP']=max(0,(int)$m['HP']-$amount);else$m['HP']=min((int)$m['HPMax'],(int)$m['HP']-$amount);$action=['hp'=>$amount,'cInf'=>(string)($dot['from']??''),'tInf'=>'m:'.$monMapId,'typ'=>'dot'];$packet=['cmd'=>'ct','m'=>[(string)$monMapId=>['intHP'=>$m['HP'],'intHPMax'=>$m['HPMax'],'intMP'=>$m['MP'],'intMPMax'=>$m['MPMax'],'intState'=>$m['HP']<=0?0:$m['state'],'targets'=>array_map('intval',array_keys((array)$m['targets']))]],'sara'=>[['actionResult'=>$action,'iRes'=>1]]];if($m['HP']<=0){$m['state']=0;$m['respawnAt']=$now+max(1,(int)$m['Respawn']);$m['auras']=[];$m['dots']=[];$p=[];foreach(array_keys((array)$m['targets']) as $sid){$member=$room->clients[(int)$sid]??null;if($member&&$member->hp>0)$p[$member->username]=['intState'=>1];}if($p)$packet['p']=$p;$this->router->rewardMonsterParticipants($room,$m);$this->broadcastJson($packet,$room);return;}$this->broadcastJson($packet,$room);if(isset($m['dots'][$auraId]))$m['dots'][$auraId]['nextTick']=$now+2.0;}
     }
 
     private function expireMonsterAuras(RoomState $room,array &$m,int $monMapId,float $now): void
@@ -820,6 +833,7 @@ final class GameServer
     }
     private function shutdownNow(): void
     {
+        try{$this->rifts?->finish('interrupted');}catch(Throwable $e){$this->log->warn('Rift shutdown checkpoint: '.$e->getMessage());}
         foreach(array_values($this->clients) as $c)$this->disconnect($c,'server stopping');
         try{$this->db->run("UPDATE users SET CurrentServer='Offline' WHERE CurrentServer=?",[(string)$this->config->get('server_name','Aera')]);}catch(Throwable){}
         $this->markServer(false);
@@ -906,6 +920,7 @@ final class GameServer
     {
         $action = strtolower(trim($action));
 
+        if(str_starts_with($action,'rift-'))return $this->rifts?->control($action,$params)??['ok'=>false,'message'=>'Rifts unavailable.'];
         if ($action === 'snapshot') {
             $players = [];
             foreach ($this->clients as $client) {

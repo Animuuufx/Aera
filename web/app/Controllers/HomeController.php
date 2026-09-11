@@ -137,6 +137,7 @@ final class HomeController
                 $guild=Database::one('SELECT g.Name,g.Level,ug.Rank FROM users_guilds ug INNER JOIN guilds g ON g.id=ug.GuildID WHERE ug.UserID=? LIMIT 1',[(int)$character['id']]);
             }
         }
-        View::render('character',['query'=>$name,'character'=>$character,'equipped'=>$equipped,'guild'=>$guild]);
+        $riftStats=$character&&$this->hasTable('users_rifts')?Database::one('SELECT * FROM users_rifts WHERE UserID=?',[(int)$character['id']]):null;
+        View::render('character',['riftStats'=>$riftStats,'query'=>$name,'character'=>$character,'equipped'=>$equipped,'guild'=>$guild]);
     }
 }

@@ -71,6 +71,8 @@ import flash.system.ApplicationDomain;
 
     public class Game extends MovieClip 
     {
+        private var aeraRiftHUD:liteAssets.draw.riftHUD;
+
 
         public static var ISWEB:Boolean = true;
         public static var root:Game;
@@ -3686,6 +3688,10 @@ import flash.system.ApplicationDomain;
                                 "auras":tLeaf.auras
                             }, tAvt, tLeaf);
                             tLeaf.auras = [];
+                            break;
+                        case "riftState":
+                            if (aeraRiftHUD == null) { aeraRiftHUD = new liteAssets.draw.riftHUD(this); addChild(aeraRiftHUD); }
+                            aeraRiftHUD.update(resObj);
                             break;
                         case "uotls":
                             userTreeWrite(resObj.unm, resObj.o);
@@ -12095,6 +12101,7 @@ import flash.system.ApplicationDomain;
 
         public function logout():void
         {
+            if (aeraRiftHUD != null) aeraRiftHUD.visible = false;
             if (((intChatMode) && (chatF.bTall)))
             {
                 ui.mcInterface.ncModeChat.dispatchEvent(new MouseEvent(MouseEvent.CLICK));

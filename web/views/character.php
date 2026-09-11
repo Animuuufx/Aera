@@ -6,6 +6,7 @@
   </section>
   <?php if($query!=='' && !$character): ?><div class="portal-message-card">No character named <strong><?= e($query) ?></strong> was found.</div><?php endif; ?>
   <?php if($character): ?>
+  <?php if($riftStats): ?><section class="portal-widget"><h2>Aera Rifts</h2><p>Rifts closed: <?= (int)$riftStats['RiftsClosed'] ?> · Legendary Rifts: <?= (int)$riftStats['LegendaryClosed'] ?> · Bosses defeated: <?= (int)$riftStats['BossesDefeated'] ?> · Highest contribution: <?= number_format((int)$riftStats['HighestContribution']) ?></p></section><?php endif; ?>
   <div class="portal-character-grid">
     <section class="portal-widget portal-character-card">
       <div class="portal-character-head"><span class="portal-avatar-letter large"><?= e(strtoupper(substr((string)$character['Name'],0,1))) ?></span><div><span class="portal-red-label">LEVEL <?= (int)$character['Level'] ?></span><h2><?= e($character['Name']) ?></h2><p><?= $guild?e($guild['Name']).' · Guild Lv '.(int)$guild['Level']:'No guild' ?></p></div></div>

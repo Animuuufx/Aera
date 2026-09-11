@@ -283,6 +283,7 @@ final class ExtensionRouter
         $cmd=strtolower(trim((string)($p[0]??'')));
         if($cmd==='')return;
 
+        if($cmd==='rift'){$this->server->rifts?->playerCommand($u,array_slice($p,1));return;}
         // Player commands from Java UserCommand.
         if($cmd==='tfer'){
             $room=strtolower(str_replace('battleon','faroff',(string)($p[2]??$p[1]??'faroff')));
@@ -608,9 +609,11 @@ if($cmd==='level'){
                     $damage=$this->combat->monsterIncoming($damage,(array)($m['auras']??[]),$now,$school);
                     if((float)$m['DamageReduction']>0)$damage=(int)round($damage*max(0.0,1.0-(float)$m['DamageReduction']));
                 }
+                $this->server->rifts?->hit($u,$m,$damage);
                 if($damage>=0)$m['HP']=max(0,(int)$m['HP']-$damage);else$m['HP']=min((int)$m['HPMax'],(int)$m['HP']-$damage);
                 if(!$granted&&$skillRef==='aa'&&$damage>0&&in_array($type,['hit','crit'],true)){$u->mp=min($u->mpMax,$u->mp+($type==='crit'?(int)$this->config->get('basic_crit_mana',6):(int)$this->config->get('basic_hit_mana',4)));$granted=true;}
                 if($m['HP']<=0){
+                    $this->server->rifts?->killed($m);
                     $rewardTargets=array_keys($m['targets']);$m['state']=0;$m['auras']=[];$m['dots']=[];$m['respawnAt']=$now+max(1,(int)$m['Respawn']);
                     foreach($rewardTargets as $sid){$member=$r->clients[$sid]??null;if($member){$member->state=1;$member->targetMonster=null;$this->rewardMonster($member,$m);}}
                     $m['targets']=[];if($u->targetMonster===$id)$u->targetMonster=null;$u->state=1;
@@ -860,7 +863,7 @@ if($cmd==='level'){
                         $this->clearMonsterAuras($room,$monster,$monMapId);
                     }else{
                         $monster['auras'][(int)$auraId]=$this->auraRuntime($a,$expiresAt,$from,$damage);
-                        if($cat==='d')$monster['dots'][(int)$auraId]=['auraId'=>(int)$auraId,'damage'=>$damage,'from'=>$from,'nextTick'=>$now+2.0,'expiresAt'=>$expiresAt];
+                        if($cat==='d')$monster['dots'][(int)$auraId]=['auraId'=>(int)$auraId,'damage'=>$damage,'from'=>$from,'riftUserId'=>($caster?->dbId??0),'nextTick'=>$now+2.0,'expiresAt'=>$expiresAt];
                     }
                     $events[]=['cInf'=>$from,'cmd'=>'aura+','auras'=>$this->auraClientArray($a,$isNew,$effective),'tInf'=>$targetInfo];unset($monster);continue;
                 }
@@ -895,7 +898,7 @@ if($cmd==='level'){
                         $runtime['guarded']=$this->activePlayerAuraByName($target,'On Guard',$now)!==null;
                     }
                     $target->auras[(int)$auraId]=$runtime;
-                    if($cat==='d')$target->dots[(int)$auraId]=['auraId'=>(int)$auraId,'damage'=>$damage,'from'=>$from,'nextTick'=>$now+2.0,'expiresAt'=>$expiresAt];
+                    if($cat==='d')$target->dots[(int)$auraId]=['auraId'=>(int)$auraId,'damage'=>$damage,'from'=>$from,'riftUserId'=>($caster?->dbId??0),'nextTick'=>$now+2.0,'expiresAt'=>$expiresAt];
                     if($cat==='clean'){
                         foreach(array_keys($target->auras) as $existingId)if((int)$existingId!==(int)$auraId)$this->removePlayerAura($target,(int)$existingId,true);
                     }
@@ -975,6 +978,7 @@ if($cmd==='level'){
     /** Java MonsterState.giveRewards() parity: every participant receives independently rolled drops and rewards. */
     private function rewardMonster(ClientSession $u,array $m): void
     {
+        if(isset($m['riftId']))return; // Rift ledger is the exclusive reward authority.
         try{
             $mon=$this->world->monsters[(int)($m['MonID']??0)]??null;
             if(!$mon)return;
@@ -1003,6 +1007,7 @@ if($cmd==='level'){
     /** Public entry used by GameServer for DoT/monster-skill deaths. */
     public function rewardMonsterParticipants(RoomState $room,array &$monster): void
     {
+        $this->server->rifts?->killed($monster);
         $targetIds=array_keys((array)($monster['targets']??[]));
         foreach($targetIds as $socketId){
             $member=$room->clients[(int)$socketId]??null;

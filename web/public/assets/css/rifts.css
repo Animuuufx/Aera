@@ -1,0 +1,17 @@
+.rift-admin,.rift-public{display:grid;gap:20px;min-width:0}
+.rift-admin .card,.rift-public .portal-widget{padding:24px;background:#191919;border:1px solid #333;border-radius:6px;min-width:0}
+.rift-admin h2,.rift-public h2{margin:0 0 14px;color:#eee;font-size:21px}
+.rift-admin p,.rift-public p{color:#bbb;line-height:1.65}
+.rift-admin form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;align-items:end;margin:20px 0}
+.rift-admin label{display:flex;flex-direction:column;gap:7px;color:#bbb;font-size:13px;min-width:0}
+.rift-admin input,.rift-admin select{width:100%;min-width:0;background:#101010;color:#eee;border:1px solid #444;border-radius:4px;padding:11px}
+.rift-admin button,.rift-public button{border:1px solid #8f2a2a;background:#702020;color:#fff;border-radius:4px;padding:11px 14px;font-weight:700;cursor:pointer}
+.rift-admin button:hover,.rift-public button:hover{background:#922c2c}
+.rift-admin button[value="rift-stop"]{background:#252525;border-color:#666}
+.rift-admin a,.rift-public a{color:#dfbb76}
+.rift-admin progress{width:100%;height:12px;accent-color:#cba45d}
+.rift-admin table{width:100%;border-collapse:collapse;font-size:13px}
+.rift-admin td,.rift-admin th{padding:10px 6px;text-align:left;border-bottom:1px solid #333;overflow-wrap:anywhere}
+.rift-public .rift-shop-item{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:16px 0;border-top:1px solid #333}
+.rift-public .rift-shop-item strong{flex:1;min-width:180px;color:#eee}
+@media(max-width:600px){.rift-admin .card,.rift-public .portal-widget{padding:16px}.rift-admin form{grid-template-columns:1fr}.rift-admin table{font-size:11px}}

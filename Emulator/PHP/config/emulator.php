@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 return [
+    'rifts_enabled'=>true,'rift_min_interval'=>1800,'rift_max_interval'=>5400,
     'host'=>'0.0.0.0','port'=>5589,
     'console_host'=>'127.0.0.1','console_port'=>5591,
     'zone'=>'zone_master','server_name'=>'Aera','staff_only'=>false,

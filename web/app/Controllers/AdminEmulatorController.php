@@ -18,6 +18,40 @@ use Throwable;
 
 final class AdminEmulatorController
 {
+    public function rifts(Request $request): void
+    {
+        $admin=Auth::requireAdmin();$ready=RiftController::ready();
+        $runtime=$this->rpcRequest('rift-status',[],1.2);
+        View::render('admin.rifts',['admin'=>$admin,'ready'=>$ready,'runtime'=>$runtime,
+            'definitions'=>$ready?Database::all('SELECT * FROM rift_definitions ORDER BY id'):[],
+            'history'=>$ready?Database::all('SELECT id,Map,Tier,Modifier,Status,StartedAt FROM rift_events ORDER BY id DESC LIMIT 30'):[],
+            'maps'=>Database::all('SELECT Name FROM maps WHERE PvP=0 ORDER BY Name'),
+            'monsters'=>Database::all('SELECT id,Name FROM monsters ORDER BY Name')]);
+    }
+    public function riftAction(Request $request): void
+    {
+        Auth::requireAdmin();Csrf::verify($request);
+        $action=(string)$request->input('action','');
+        try{
+            if($action==='definition'){
+                $map=(string)$request->input('map','');
+                if(!Database::one('SELECT id FROM maps WHERE Name=? AND PvP=0',[$map]))throw new \RuntimeException('Choose a non-PvP map.');
+                $ids=[];foreach(['invader','elite','crystal','commander'] as $key){$id=(int)$request->input($key,0);if(!Database::one('SELECT id FROM monsters WHERE id=?',[$id]))throw new \RuntimeException('Choose valid monsters.');$ids[]=$id;}
+                $name=trim((string)$request->input('name',''));if($name===''||strlen($name)>100)throw new \RuntimeException('Enter a name up to 100 characters.');
+                Database::run('INSERT INTO rift_definitions (Name,Map,Enabled,InvaderID,EliteID,CrystalID,CommanderID) VALUES (?,?,1,?,?,?,?)',array_merge([$name,$map],$ids));
+                Session::flash('success','Rift definition created. Event goals can be edited in All Database Tables.');
+            }elseif($action==='shop'){
+                $id=(int)$request->input('item',0);$cost=(int)$request->input('cost',0);
+                if($cost<1||$cost>1000000||!Database::one('SELECT id FROM items WHERE id=?',[$id]))throw new \RuntimeException('Choose a valid item ID and a cost from 1 to 1,000,000.');
+                Database::run('INSERT INTO rift_shop (ItemID,Cost) VALUES (?,?)',[$id,$cost]);Session::flash('success','Item added to the Rift Shard shop.');
+            }else{
+                if(!in_array($action,['rift-start','rift-stop','rift-boss','rift-multiplier'],true))throw new \RuntimeException('Invalid Rift action.');
+                $result=$this->rpcRequest($action,['definition'=>(int)$request->input('definition',0),'tier'=>(string)$request->input('tier','Normal'),'modifier'=>(string)$request->input('modifier','Random'),'multiplier'=>(float)$request->input('multiplier',1)],5);
+                Session::flash(!empty($result['ok'])?'success':'error',(string)($result['message']??'Emulator did not respond.'));
+            }
+        }catch(Throwable $e){Session::flash('error',$e->getMessage());}
+        Response::redirect('/admin/rifts');
+    }
     public function index(Request $request): void
     {
         $admin = Auth::requireAdmin();
