@@ -46,7 +46,9 @@ final class RiftManager
     }
     private function defenseFrame(): string
     {
-        return $this->event?->defenseCell??'';
+        $map=$this->world->map((string)$this->event->definition['Map']);
+        $placements=$this->world->mapMonsters((int)$map['id']);$first=reset($placements);
+        return (string)$first['Frame'];
     }
     public function control(string $action,array $p): array
     {
@@ -69,7 +71,7 @@ final class RiftManager
         $d=$this->db->one('SELECT * FROM rift_definitions WHERE id=? AND Enabled=1',[$definition]);
         if(!$d)throw new RuntimeException('Choose an enabled Rift definition.');
         $map=$this->world->map((string)$d['Map']);
-        if(!$map||(int)($map['PvP']??0)!==0||(int)($map['Staff']??0)!==0)throw new RuntimeException('Rifts require a public non-PvP map.');
+        if(!$map||(int)($map['PvP']??0)!==0||(int)($map['Staff']??0)!==0||!$this->world->mapMonsters((int)$map['id']))throw new RuntimeException('Rifts require a public non-PvP map with database monster placements.');
         foreach(['InvaderID','EliteID','CrystalID','CommanderID'] as $k)if(!isset($this->world->monsters[(int)$d[$k]]))throw new RuntimeException('Missing monster template: '.$k);
         foreach(['KillGoal','CrystalGoal','MaterialGoal','DefenseSeconds','DurationSeconds','BaseShards'] as $k)if((int)$d[$k]<1||(int)$d[$k]>100000)throw new RuntimeException('Invalid definition value: '.$k);
         if(!in_array($tier,['Normal','Heroic','Legendary'],true))throw new RuntimeException('Invalid Rift tier.');
@@ -91,47 +93,24 @@ final class RiftManager
     public function attach(RoomState $room,bool $refresh=false): void
     {
         if(!$this->eligible($room)||isset($room->meta['rift']))return;
-        $room->meta['rift']=['id'=>$this->id,'nextId'=>max(array_keys($room->monsters)?:[0])+1];
-        // Normal encounters return fresh when the Rift ends.
-        $room->monsters=[];
+        $room->meta['rift']=['id'=>$this->id];
         $this->populate($room);
         if($refresh)$this->server->refreshRiftRoom($room);
     }
     private function populate(RoomState $room): void
     {
         $e=$this->event;if(!$e)return;
-        $room->meta['rift']['nextId']=max((int)($room->meta['rift']['nextId']??1),max(array_keys($room->monsters)?:[0])+1);
-        foreach($room->monsters as $id=>$monster)if(isset($monster['riftId']))unset($room->monsters[$id]);
-        foreach(array_keys($room->meta['rift']['areas']??[]) as $frame)$this->spawnArea($room,(string)$frame);
-    }
-    /** Clients report only their current walkable screen; no coordinates or monster IDs are accepted. */
-    public function enterArea(ClientSession $u,string $frame): void
-    {
-        $room=$this->server->currentRoom($u);$e=$this->event;
-        if(!$e||!$room||!$u->authenticated||$u->hp<=0||$frame!==$u->frame||$frame===''||strlen($frame)>64||!$this->eligible($room))return;
-        $this->attach($room);
-        if(isset($room->meta['rift']['areas'][$frame]))return;
-        if(count($room->meta['rift']['areas']??[])>=8)return;
-        if(!isset($e->areas[$frame])&&count($e->areas)>=8)return;
-        $e->areas[$frame]=true;
-        if($e->defenseCell==='')$e->defenseCell=$frame;
-        if($e->phase==='commander'&&$e->commanderFrame==='')$e->commanderFrame=$frame;
-        $room->meta['rift']['areas'][$frame]=true;
-        $this->spawnArea($room,$frame);
-        $this->server->refreshRiftRoom($room);
-    }
-    private function spawnArea(RoomState $room,string $frame): void
-    {
-        $e=$this->event;if(!$e)return;
-        $next=max((int)($room->meta['rift']['nextId']??1),max(array_keys($room->monsters)?:[0])+1);
-        for($i=0;$i<2;$i++){
-            $role=$e->phase==='commander'&&$frame===$e->commanderFrame&&$i===0?'commander':($e->phase==='objectives'&&$i===0?'crystal':'invader');
-            $placement=['MonMapID'=>$next++,'Frame'=>$frame,'Aggresive'=>1,'DBPosition'=>true,'X'=>0,'Y'=>0,
-                'riftSpawnSeed'=>random_int(1,2147483647),'state'=>1,'targets'=>[],'auras'=>[],'dots'=>[],
-                'skillCooldowns'=>[],'lastCombat'=>0.0,'lastRegen'=>microtime(true),'lastAttack'=>0.0,'respawnAt'=>0.0];
-            $room->monsters[$placement['MonMapID']]=$this->enemy($placement,$role);
+        $placements=$this->world->mapMonsters((int)$room->map['id']);$out=[];$i=0;
+        foreach($placements as $id=>$placement){
+            $role=$e->phase==='commander'&&$i===0?'commander':($e->phase==='objectives'&&$i%2===0?'crystal':'invader');
+            $out[$id]=$this->enemy($placement,$role);$i++;
         }
-        $room->meta['rift']['nextId']=$next;
+        // Single-placement maps need material invaders and Commander adds too.
+        if($e->phase!=='invasion'&&count($out)===1){
+            $id=max(array_keys($out))+1;$placement=reset($placements);$placement['MonMapID']=$id;
+            $out[$id]=$this->enemy($placement,'invader');
+        }
+        $room->monsters=$out;
     }
     private function enemy(array $placement,string $role): array
     {
@@ -194,10 +173,9 @@ final class RiftManager
             $defenders=[];
             foreach($this->server->rooms() as $r){
                 if(!isset($r->meta['rift']))continue;
-                $frame=$this->defenseFrame();
+                $first=reset($r->monsters);$frame=(string)($first['Frame']??'Enter');
                 foreach($r->clients as $u)if($u->authenticated&&$u->hp>0&&$u->frame===$frame)$defenders[]=$u->dbId;
                 foreach($r->monsters as $id=>&$m){
-                    if(($m['riftId']??0)!==$this->id)continue;
                     if(($m['riftRole']??'')==='commander')$m['HP']=$e->bossHp;
                     if($m['state']===0)continue;
                     if($e->phase==='objectives'&&$m['riftRole']==='invader'&&$m['Frame']===$frame){
@@ -208,7 +186,7 @@ final class RiftManager
                 }unset($m);
             }
             $e->defend($defenders);
-            if($e->phase==='objectives'&&$e->defenseCell!==''&&!$defenders&&$e->defense<(int)$e->definition['DefenseSeconds']){
+            if($e->phase==='objectives'&&!$defenders&&$e->defense<(int)$e->definition['DefenseSeconds']){
                 $e->wardHp=max(0,$e->wardHp-1);
                 if($e->wardHp===0){$this->finish('failed');return;}
             }
@@ -226,11 +204,10 @@ final class RiftManager
     private function commander(): void
     {
         $e=$this->event;if(!$e)return;$e->phase='commander';
-        $e->commanderFrame=$e->areas?(string)array_rand($e->areas):'';
         $base=(int)$this->world->monsters[(int)$e->definition['CommanderID']]['Health'];
         $e->bossMax=max(1,(int)round($base*(1+.35*max(0,count($e->players)-1))*($e->tier==='Legendary'?3:($e->tier==='Heroic'?1.7:1))*($e->modifier==='Titan'?2.5:1)));
         $e->bossHp=$e->bossMax;$e->nextMechanic=microtime(true)+12;
-        $this->announce('The Rift Commander has appeared in cell '.$e->commanderFrame.'! Its health is shared across all public rooms.');$this->rebuild();
+        $this->announce('The Rift Commander has appeared! Its health is shared across all public rooms.');$this->rebuild();
     }
     private function mechanics(float $now): void
     {
@@ -244,14 +221,14 @@ final class RiftManager
             $e->strikeAt=0;
         }
         if($now<$e->nextMechanic)return;
-        $e->strikeFrame=$e->commanderFrame;$e->strikeAt=$now+5;
+        $placements=$this->world->mapMonsters((int)$this->world->map((string)$e->definition['Map'])['id']);
+        $first=reset($placements);$e->strikeFrame=(string)$first['Frame'];$e->strikeAt=$now+5;
         $e->nextMechanic=$now+($e->modifier==='Corrupted'?12:20);
         foreach($this->server->rooms() as $r)if(isset($r->meta['rift']))$this->server->broadcastRaw(['warning','Rift shockwave in '.$e->strikeFrame.' in 5 seconds! Leave this cell to evade'.($e->bossHp<$e->bossMax*.3?' — Commander enraged!':'!')],$r);
     }
     public function playerCommand(ClientSession $u,array $args): void
     {
         $action=strtolower((string)($args[0]??'status'));
-        if($action==='area'){$this->enterArea($u,(string)($args[1]??''));return;}
         if($action==='panel'){$this->sendPanel($u,(int)($args[1]??0),(int)($args[2]??0));return;}
         if($action==='buy'){
             try{
@@ -263,8 +240,8 @@ final class RiftManager
         }
         if($action==='join'&&$this->event){$this->server->joinGameRoom($u,(string)$this->event->definition['Map']);return;}
         if($action==='deposit'&&$this->event){
-            $r=$this->server->currentRoom($u);
-            if($r&&isset($r->meta['rift'])&&$u->hp>0&&$u->frame===$this->defenseFrame()){$n=$this->event->deposit($u->dbId);$this->server->sendRaw($u,['server','Deposited '.$n.' Rift materials.']);return;}
+            $r=$this->server->currentRoom($u);$first=$r?reset($r->monsters):false;
+            if($r&&isset($r->meta['rift'])&&$u->hp>0&&$u->frame===(string)($first['Frame']??'')){$n=$this->event->deposit($u->dbId);$this->server->sendRaw($u,['server','Deposited '.$n.' Rift materials.']);return;}
             $this->server->sendRaw($u,['warning','Travel to the Rift defense cell while alive to deposit materials.']);return;
         }
         $s=$this->status();$this->server->sendJson($u,$s);
@@ -309,9 +286,7 @@ final class RiftManager
         foreach($rewards as $id=>$r){$u=$this->server->findUserByDbId((int)$id);if($u)$this->server->sendRaw($u,['server',$r['medal'].' Contribution! Awarded '.$r['shards'].' Rift Shards.']);}
         $this->event=null;
         foreach($this->server->rooms() as $room)if(isset($room->meta['rift'])){
-            foreach($room->monsters as $id=>$m)if(isset($m['riftId']))unset($room->monsters[$id]);
-            $room->monsters=$this->world->mapMonsters((int)$room->map['id']);
-            unset($room->meta['rift']);$this->server->refreshRiftRoom($room);
+            $room->monsters=$this->world->mapMonsters((int)$room->map['id']);unset($room->meta['rift']);$this->server->refreshRiftRoom($room);
         }
         $this->announce('The Rift in '.$e->definition['Map'].' has ended: '.$status.'.');$this->publish();$this->schedule();
     }

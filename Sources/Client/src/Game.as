@@ -4947,7 +4947,6 @@ import flash.system.ApplicationDomain;
 
         private function updateRiftHUD(state:Object):void
         {
-            if(world!=null)world.registerRiftArea(state);
             if (aeraRiftHUD == null)
             {
                 aeraRiftHUD = new liteAssets.draw.riftHUD(sendRiftCommand);
