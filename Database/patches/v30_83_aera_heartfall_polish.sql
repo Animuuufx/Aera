@@ -7,13 +7,15 @@ CREATE TABLE IF NOT EXISTS `aera_content_packs` (
   `InstalledAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-DROP TEMPORARY TABLE IF EXISTS `hf_polish`;
-CREATE TEMPORARY TABLE `hf_polish` (
+-- MySQL 5.7 cannot reopen a TEMPORARY TABLE when the same statement reads it more than once
+-- (for example, the UNION ALL used for quest rewards below). Use a throwaway normal staging table instead.
+DROP TABLE IF EXISTS `hf_polish`;
+CREATE TABLE `hf_polish` (
   `seq` int NOT NULL PRIMARY KEY,
   `title` varchar(64) NOT NULL,
   `mobname` varchar(64) NOT NULL,
   `bossname` varchar(64) NOT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Names are deliberately matched to the six monster SWF/linkage archetypes used by v30_82.
 -- Normal cycle: WolfDire / Shade1 / StoneGolem1.
@@ -110,4 +112,4 @@ CALL `install_aera_heartfall_polish`()$$
 DROP PROCEDURE `install_aera_heartfall_polish`$$
 DELIMITER ;
 
-DROP TEMPORARY TABLE IF EXISTS `hf_polish`;
+DROP TABLE IF EXISTS `hf_polish`;
