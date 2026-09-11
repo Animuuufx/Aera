@@ -5,7 +5,9 @@
 CREATE TABLE IF NOT EXISTS `aera_content_packs` (`Name` varchar(64) NOT NULL PRIMARY KEY, `InstalledAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- MySQL 5.7 cannot reopen the same TEMPORARY TABLE more than once in one statement.
--- Heartfall intentionally reuses this staging data in UNION ALLs/subqueries, so use throwaway normal tables.
+-- Heartfall reuses this staging data in subqueries, so use throwaway normal tables.
+-- Multi-row INSERT...SELECT work is intentionally split into separate statements to avoid
+-- MySQL 5.7 UNION collation coercion against older Aera schemas with mixed collations.
 DROP TABLE IF EXISTS `hf_zone`;
 CREATE TABLE `hf_zone` (
   `seq` int NOT NULL PRIMARY KEY, `mapkey` varchar(32) NOT NULL, `title` varchar(64) NOT NULL, `swf` varchar(128) NOT NULL,
@@ -72,19 +74,20 @@ BEGIN
     DELETE FROM `npcs_buttons` WHERE `id`=810099;
     DELETE FROM `maps_npc` WHERE `id`=810099;
 
-    INSERT INTO `maps` (`id`,`Name`,`File`,`MaxPlayers`,`ReqLevel`,`ReqParty`,`Upgrade`,`Staff`,`PvP`) SELECT 820000+seq,mapkey,swf,12,1,0,0,0,0 FROM `hf_zone`;
+    INSERT INTO `maps` (`id`,`Name`,`File`,`MaxPlayers`,`ReqLevel`,`ReqParty`,`Upgrade`,`Staff`,`PvP`)
+      SELECT 820000+seq,mapkey,swf,12,1,0,0,0,0 FROM `hf_zone`;
 
     INSERT INTO `items` (`id`,`Name`,`Description`,`Type`,`File`,`Link`,`Icon`,`Equipment`,`Level`,`DPS`,`Range`,`Rarity`,`Quantity`,`Stack`,`Cost`,`Coins`,`Sell`,`Temporary`,`Upgrade`,`Staff`,`EnhID`,`Trade`,`Market`)
-      SELECT 821000+(seq-1)*2,mobtoken,CONCAT('Heartfall quest item from ',mob,' in ',title,'.'),'Item','','','iibag','None',1,100,50,10,1,20,0,0,0,1,0,0,1,0,0 FROM `hf_zone`
-      UNION ALL
+      SELECT 821000+(seq-1)*2,mobtoken,CONCAT('Heartfall quest item from ',mob,' in ',title,'.'),'Item','','','iibag','None',1,100,50,10,1,20,0,0,0,1,0,0,1,0,0 FROM `hf_zone`;
+    INSERT INTO `items` (`id`,`Name`,`Description`,`Type`,`File`,`Link`,`Icon`,`Equipment`,`Level`,`DPS`,`Range`,`Rarity`,`Quantity`,`Stack`,`Cost`,`Coins`,`Sell`,`Temporary`,`Upgrade`,`Staff`,`EnhID`,`Trade`,`Market`)
       SELECT 821001+(seq-1)*2,bosstoken,CONCAT('Heartfall quest item from ',boss,' in ',title,'.'),'Item','','','iibag','None',1,100,50,10,1,5,0,0,0,1,0,0,1,0,0 FROM `hf_zone`;
 
     INSERT INTO `items` (`id`,`Name`,`Description`,`Type`,`File`,`Link`,`Icon`,`Equipment`,`Level`,`DPS`,`Range`,`Rarity`,`Quantity`,`Stack`,`Cost`,`Coins`,`Sell`,`Temporary`,`Upgrade`,`Staff`,`EnhID`,`Trade`,`Market`)
       SELECT 822000+(seq-1)*2,armorname,CONCAT(title,' field armor from the Heartfall campaign.'),'Armor',
         CASE MOD(seq-1,3) WHEN 0 THEN 'ForestKin2.swf' WHEN 1 THEN 'ArcticRanger.swf' ELSE 'AsgardianKnight.swf' END,
         CASE MOD(seq-1,3) WHEN 0 THEN 'ForestKinBase' WHEN 1 THEN 'ArcticRanger' ELSE 'AsgardianKnight' END,
-        'iwarmor','co',LEAST(seq,20),100,50,10,1,1,400+(seq-1)*225,0,1,0,0,0,1,1,1 FROM `hf_zone`
-      UNION ALL
+        'iwarmor','co',LEAST(seq,20),100,50,10,1,1,400+(seq-1)*225,0,1,0,0,0,1,1,1 FROM `hf_zone`;
+    INSERT INTO `items` (`id`,`Name`,`Description`,`Type`,`File`,`Link`,`Icon`,`Equipment`,`Level`,`DPS`,`Range`,`Rarity`,`Quantity`,`Stack`,`Cost`,`Coins`,`Sell`,`Temporary`,`Upgrade`,`Staff`,`EnhID`,`Trade`,`Market`)
       SELECT 822001+(seq-1)*2,swordname,CONCAT('A weapon reforged during the Heartfall campaign in ',title,'.'),'Sword',
         CASE MOD(seq-1,3) WHEN 0 THEN 'items/swords/BasicRuneSwordDage.swf' WHEN 1 THEN 'items/swords/CCFrostReaver.swf' ELSE 'items/swords/AngelicRunedBroadsword1.swf' END,
         CASE MOD(seq-1,3) WHEN 0 THEN 'BasicRuneSwordDage' WHEN 1 THEN 'CCFrostReaver' ELSE 'AngelicRunedBroadsword1' END,
@@ -95,7 +98,8 @@ BEGIN
       (825002,'Rift Ranger','Heartfall milestone class earned after Crystal Cove.','Class','ArcticRanger.swf','ArcticRanger','iiclass','ar',1,100,50,10,1,1,0,0,1,0,0,0,1,1,1),
       (825003,'Heartwarden','Final Heartfall class earned after restoring the Aera Heart.','Class','AsgardianKnight.swf','AsgardianKnight','iiclass','ar',1,100,50,10,1,1,0,0,1,0,0,0,1,1,1);
 
-    INSERT INTO `shops` (`id`,`Name`,`House`,`Upgrade`,`Staff`,`Limited`,`Field`) SELECT 820000+seq,CONCAT(title,' Supplies'),0,0,0,0,'' FROM `hf_zone`;
+    INSERT INTO `shops` (`id`,`Name`,`House`,`Upgrade`,`Staff`,`Limited`,`Field`)
+      SELECT 820000+seq,CONCAT(title,' Supplies'),0,0,0,0,'' FROM `hf_zone`;
 
     INSERT INTO `npcs` (`id`,`Name`,`Gender`,`Job`,`Slogan`,`Level`,`Health`,`Mana`,`DPS`,`ColorHair`,`ColorSkin`,`ColorEye`,`ColorBase`,`ColorTrim`,`ColorAccessory`,`WeaponID`,`ArmorID`)
       SELECT 820000+seq,npc,IF(MOD(seq,2)=1,'F','M'),job,slogan,seq,1000+seq*100,100,0,'0x3A2D2A','0xD6AD8D','0x87CFFF','0x33475E','0xC5A96A','0x6B8CA8',822001+(seq-1)*2,822000+(seq-1)*2 FROM `hf_zone`;
@@ -103,13 +107,13 @@ BEGIN
       (820000,'Heartfall Guide','F','Auralis Courier','The old starter story is retired. Follow the silver trail to Aera Wake and begin Heartfall.',1,1000,100,0,'0x3A2D2A','0xD6AD8D','0x87CFFF','0x33475E','0xC5A96A','0x6B8CA8',822001,822000);
 
     INSERT INTO `monsters` (`id`,`Name`,`File`,`Linkage`,`Level`,`Health`,`Mana`,`Gold`,`Coin`,`Experience`,`ClassPoint`,`Reputation`,`DamageReduction`,`DPS`,`Respawn`,`Speed`,`Immune`)
-      SELECT 823000+(seq-1)*2,mob,CASE MOD(seq-1,3) WHEN 0 THEN 'WolfDire.swf' WHEN 1 THEN 'Shade1.swf' ELSE 'StoneGolem1.swf' END,CASE MOD(seq-1,3) WHEN 0 THEN 'WolfDire' WHEN 1 THEN 'Shade1' ELSE 'StoneGolem1' END,seq,350+seq*180,100,15+seq*8,0,50+seq*30,5,3,0,8+seq*3,7,2200,0 FROM `hf_zone`
-      UNION ALL
+      SELECT 823000+(seq-1)*2,mob,CASE MOD(seq-1,3) WHEN 0 THEN 'WolfDire.swf' WHEN 1 THEN 'Shade1.swf' ELSE 'StoneGolem1.swf' END,CASE MOD(seq-1,3) WHEN 0 THEN 'WolfDire' WHEN 1 THEN 'Shade1' ELSE 'StoneGolem1' END,seq,350+seq*180,100,15+seq*8,0,50+seq*30,5,3,0,8+seq*3,7,2200,0 FROM `hf_zone`;
+    INSERT INTO `monsters` (`id`,`Name`,`File`,`Linkage`,`Level`,`Health`,`Mana`,`Gold`,`Coin`,`Experience`,`ClassPoint`,`Reputation`,`DamageReduction`,`DPS`,`Respawn`,`Speed`,`Immune`)
       SELECT 823001+(seq-1)*2,boss,CASE MOD(seq-1,3) WHEN 0 THEN 'Treeant.swf' WHEN 1 THEN 'FrostQueenBhtNoth.swf' ELSE 'Undeadlich.swf' END,CASE MOD(seq-1,3) WHEN 0 THEN 'Treeant' WHEN 1 THEN 'FrostQueenBhtNoth' ELSE 'UndeadLich1' END,seq+1,900+seq*450,100,50+seq*18,0,180+seq*70,12,8,0,15+seq*4,12,2200,0 FROM `hf_zone`;
 
     INSERT INTO `quests` (`id`,`FactionID`,`Name`,`Description`,`EndText`,`Experience`,`Gold`,`Coins`,`ClassPoints`,`RewardType`,`Level`,`Upgrade`,`Once`,`Slot`,`Value`,`Field`,`Index`)
-      SELECT 824000+(seq-1)*2,1,CONCAT(title,': Clear the Trail'),CONCAT('Defeat ',mob,' in ',title,' and recover 4 ',mobtoken,'. ',npc,' needs them to trace the Heartfall corruption.'),CONCAT('The evidence points deeper into ',title,'. Now confront ',boss,'.'),250+seq*160,180+seq*120,0,70+seq*10,'S',1,0,1,91,(seq-1)*2+1,'',-1 FROM `hf_zone`
-      UNION ALL
+      SELECT 824000+(seq-1)*2,1,CONCAT(title,': Clear the Trail'),CONCAT('Defeat ',mob,' in ',title,' and recover 4 ',mobtoken,'. ',npc,' needs them to trace the Heartfall corruption.'),CONCAT('The evidence points deeper into ',title,'. Now confront ',boss,'.'),250+seq*160,180+seq*120,0,70+seq*10,'S',1,0,1,91,(seq-1)*2+1,'',-1 FROM `hf_zone`;
+    INSERT INTO `quests` (`id`,`FactionID`,`Name`,`Description`,`EndText`,`Experience`,`Gold`,`Coins`,`ClassPoints`,`RewardType`,`Level`,`Upgrade`,`Once`,`Slot`,`Value`,`Field`,`Index`)
       SELECT 824001+(seq-1)*2,1,CONCAT(title,': Break the Hold'),CONCAT('Defeat ',boss,' in ',title,' and recover ',bosstoken,'.'),CASE WHEN seq<20 THEN CONCAT('The Heartfall trail continues. Travel onward from ',title,' and keep the fragment path moving.') ELSE 'The Sovereign avatar is defeated. The Aera Heart is sealed again, and you are the first Heartwarden of the new age.' END,450+seq*240,300+seq*180,0,120+seq*15,'S',1,0,1,91,(seq-1)*2+2,'',-1 FROM `hf_zone`;
 
     INSERT INTO `classes` (`id`,`ItemID`,`Category`,`Description`,`ManaRegenerationMethods`,`StatsDescription`) VALUES
@@ -120,27 +124,52 @@ BEGIN
     INSERT INTO `skills` (`id`,`Name`,`Animation`,`Description`,`Damage`,`Mana`,`Icon`,`Range`,`Dsrc`,`Reference`,`Target`,`Effects`,`Type`,`Strl`,`Cooldown`,`HitTargets`)
       SELECT sid,name,IF(refv='aa','Attack1,Attack2','Attack3'),IF(hits=2,'Strike up to two enemies.',IF(refv='aa','A basic weapon attack.','Deal physical weapon damage to one enemy.')),damage,mana,'iwsword',rangev,'',refv,'h','m','p','',cooldown,hits FROM `hf_skill`;
 
-    INSERT INTO `maps_npc` (`id`,`MapID`,`NpcID`,`NpcMapID`,`Frame`,`X`,`Y`,`Turn`) SELECT 827500+seq,820000+seq,820000+seq,1,'Enter',210,390,'Right' FROM `hf_zone`;
-    INSERT INTO `maps_npc` (`id`,`MapID`,`NpcID`,`NpcMapID`,`Frame`,`X`,`Y`,`Turn`) VALUES (827500,@entryMap,820000,820000,'Enter',235,395,'Right');
+    INSERT INTO `maps_npc` (`id`,`MapID`,`NpcID`,`NpcMapID`,`Frame`,`X`,`Y`,`Turn`)
+      SELECT 827500+seq,820000+seq,820000+seq,1,'Enter',210,390,'Right' FROM `hf_zone`;
+    INSERT INTO `maps_npc` (`id`,`MapID`,`NpcID`,`NpcMapID`,`Frame`,`X`,`Y`,`Turn`) VALUES
+      (827500,@entryMap,820000,820000,'Enter',235,395,'Right');
 
     INSERT INTO `maps_monsters` (`id`,`MapID`,`MonsterID`,`MonMapID`,`Frame`,`X`,`Y`,`Aggresive`,`Enabled`)
-      SELECT 827600+(seq-1)*3+1,820000+seq,823000+(seq-1)*2,827600+(seq-1)*3+1,'Enter',470,405,0,1 FROM `hf_zone`
-      UNION ALL SELECT 827600+(seq-1)*3+2,820000+seq,823000+(seq-1)*2,827600+(seq-1)*3+2,'Enter',660,405,0,1 FROM `hf_zone`
-      UNION ALL SELECT 827600+(seq-1)*3+3,820000+seq,823001+(seq-1)*2,827600+(seq-1)*3+3,'Enter',790,405,0,1 FROM `hf_zone`;
+      SELECT 827600+(seq-1)*3+1,820000+seq,823000+(seq-1)*2,827600+(seq-1)*3+1,'Enter',470,405,0,1 FROM `hf_zone`;
+    INSERT INTO `maps_monsters` (`id`,`MapID`,`MonsterID`,`MonMapID`,`Frame`,`X`,`Y`,`Aggresive`,`Enabled`)
+      SELECT 827600+(seq-1)*3+2,820000+seq,823000+(seq-1)*2,827600+(seq-1)*3+2,'Enter',660,405,0,1 FROM `hf_zone`;
+    INSERT INTO `maps_monsters` (`id`,`MapID`,`MonsterID`,`MonMapID`,`Frame`,`X`,`Y`,`Aggresive`,`Enabled`)
+      SELECT 827600+(seq-1)*3+3,820000+seq,823001+(seq-1)*2,827600+(seq-1)*3+3,'Enter',790,405,0,1 FROM `hf_zone`;
 
     INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`)
-      SELECT 827000+(seq-1)*5+1,820000+seq,'quests','Story Quests',CONCAT(824000+(seq-1)*2,',',824001+(seq-1)*2),'' FROM `hf_zone`
-      UNION ALL SELECT 827000+(seq-1)*5+2,820000+seq,'shop',CONCAT(title,' Supplies'),CAST(820000+seq AS CHAR),'' FROM `hf_zone`
-      UNION ALL SELECT 827000+(seq-1)*5+3,820000+seq,'join',IF(seq=1,'Return to Newbie',CONCAT('Previous: ',(SELECT z2.title FROM hf_zone z2 WHERE z2.seq=hf_zone.seq-1))),IF(seq=1,'newbie|Enter|Spawn',CONCAT((SELECT z2.mapkey FROM hf_zone z2 WHERE z2.seq=hf_zone.seq-1),'|Enter|Spawn')),'' FROM `hf_zone`
-      UNION ALL SELECT 827000+(seq-1)*5+4,820000+seq,'join',IF(seq=20,'Return to Auralis',CONCAT('Continue: ',(SELECT z2.title FROM hf_zone z2 WHERE z2.seq=hf_zone.seq+1))),IF(seq=20,'auralis|Enter|Spawn',CONCAT((SELECT z2.mapkey FROM hf_zone z2 WHERE z2.seq=hf_zone.seq+1),'|Enter|Spawn')),'' FROM `hf_zone`
-      UNION ALL SELECT 827000+(seq-1)*5+5,820000+seq,'join','Restart Heartfall','aerawake|Enter|Spawn','' FROM `hf_zone`;
-    INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`) VALUES (827101,820000,'join','Begin Heartfall','aerawake|Enter|Spawn','');
+      SELECT 827000+(seq-1)*5+1,820000+seq,'quests','Story Quests',CONCAT(824000+(seq-1)*2,',',824001+(seq-1)*2),'' FROM `hf_zone`;
+    INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`)
+      SELECT 827000+(seq-1)*5+2,820000+seq,'shop',CONCAT(title,' Supplies'),CAST(820000+seq AS CHAR),'' FROM `hf_zone`;
+    INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`)
+      SELECT 827000+(seq-1)*5+3,820000+seq,'join',IF(seq=1,'Return to Newbie',CONCAT('Previous: ',(SELECT z2.title FROM hf_zone z2 WHERE z2.seq=hf_zone.seq-1))),IF(seq=1,'newbie|Enter|Spawn',CONCAT((SELECT z2.mapkey FROM hf_zone z2 WHERE z2.seq=hf_zone.seq-1),'|Enter|Spawn')),'' FROM `hf_zone`;
+    INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`)
+      SELECT 827000+(seq-1)*5+4,820000+seq,'join',IF(seq=20,'Return to Auralis',CONCAT('Continue: ',(SELECT z2.title FROM hf_zone z2 WHERE z2.seq=hf_zone.seq+1))),IF(seq=20,'auralis|Enter|Spawn',CONCAT((SELECT z2.mapkey FROM hf_zone z2 WHERE z2.seq=hf_zone.seq+1),'|Enter|Spawn')),'' FROM `hf_zone`;
+    INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`)
+      SELECT 827000+(seq-1)*5+5,820000+seq,'join','Restart Heartfall','aerawake|Enter|Spawn','' FROM `hf_zone`;
+    INSERT INTO `npcs_buttons` (`id`,`NPCID`,`Action`,`Text`,`Value`,`Icon`) VALUES
+      (827101,820000,'join','Begin Heartfall','aerawake|Enter|Spawn','');
 
-    INSERT INTO `shops_items` (`id`,`ShopID`,`ItemID`,`QuantityRemain`) SELECT 827800+(seq-1)*2+1,820000+seq,822000+(seq-1)*2,0 FROM `hf_zone` UNION ALL SELECT 827800+(seq-1)*2+2,820000+seq,822001+(seq-1)*2,0 FROM `hf_zone`;
-    INSERT INTO `monsters_drops` (`id`,`MonsterID`,`ItemID`,`Chance`,`Quantity`) SELECT 827900+(seq-1)*2+1,823000+(seq-1)*2,821000+(seq-1)*2,1,1 FROM `hf_zone` UNION ALL SELECT 827900+(seq-1)*2+2,823001+(seq-1)*2,821001+(seq-1)*2,1,1 FROM `hf_zone`;
-    INSERT INTO `quests_requirements` (`id`,`QuestID`,`ItemID`,`Quantity`) SELECT 828000+(seq-1)*2+1,824000+(seq-1)*2,821000+(seq-1)*2,4 FROM `hf_zone` UNION ALL SELECT 828000+(seq-1)*2+2,824001+(seq-1)*2,821001+(seq-1)*2,1 FROM `hf_zone`;
-    INSERT INTO `skills_assign` (`id`,`SkillID`,`ItemID`) SELECT 828100+(sid-826000),sid,classid FROM `hf_skill`;
-    INSERT INTO `quests_rewards` (`id`,`QuestID`,`ItemID`,`Quantity`,`Rate`,`RewardType`) VALUES (828201,824009,825001,1,1,'S'),(828202,824019,825002,1,1,'S'),(828203,824039,825003,1,1,'S');
+    INSERT INTO `shops_items` (`id`,`ShopID`,`ItemID`,`QuantityRemain`)
+      SELECT 827800+(seq-1)*2+1,820000+seq,822000+(seq-1)*2,0 FROM `hf_zone`;
+    INSERT INTO `shops_items` (`id`,`ShopID`,`ItemID`,`QuantityRemain`)
+      SELECT 827800+(seq-1)*2+2,820000+seq,822001+(seq-1)*2,0 FROM `hf_zone`;
+
+    INSERT INTO `monsters_drops` (`id`,`MonsterID`,`ItemID`,`Chance`,`Quantity`)
+      SELECT 827900+(seq-1)*2+1,823000+(seq-1)*2,821000+(seq-1)*2,1,1 FROM `hf_zone`;
+    INSERT INTO `monsters_drops` (`id`,`MonsterID`,`ItemID`,`Chance`,`Quantity`)
+      SELECT 827900+(seq-1)*2+2,823001+(seq-1)*2,821001+(seq-1)*2,1,1 FROM `hf_zone`;
+
+    INSERT INTO `quests_requirements` (`id`,`QuestID`,`ItemID`,`Quantity`)
+      SELECT 828000+(seq-1)*2+1,824000+(seq-1)*2,821000+(seq-1)*2,4 FROM `hf_zone`;
+    INSERT INTO `quests_requirements` (`id`,`QuestID`,`ItemID`,`Quantity`)
+      SELECT 828000+(seq-1)*2+2,824001+(seq-1)*2,821001+(seq-1)*2,1 FROM `hf_zone`;
+
+    INSERT INTO `skills_assign` (`id`,`SkillID`,`ItemID`)
+      SELECT 828100+(sid-826000),sid,classid FROM `hf_skill`;
+    INSERT INTO `quests_rewards` (`id`,`QuestID`,`ItemID`,`Quantity`,`Rate`,`RewardType`) VALUES
+      (828201,824009,825001,1,1,'S'),
+      (828202,824019,825002,1,1,'S'),
+      (828203,824039,825003,1,1,'S');
 
     INSERT INTO `aera_content_packs` (`Name`) VALUES ('aera-heartfall-starter-v1');
   END IF;
