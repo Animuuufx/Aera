@@ -125,7 +125,7 @@ final class GameServer
             if($c->access<1){$this->log->warn('Blocked request from disabled account '.$c->username.': '.$cmd);return;}
             // Java Suck_MElator validates non-system room ids before dispatch.
             if($fromRoom>0&&!in_array($fromRoom,[1,32123],true)&&$this->roomById($fromRoom)===null){$this->log->warn('Invalid request room '.$fromRoom.' from '.$c->username.'; disconnecting.');$this->disconnect($c,'invalid request room');return;}
-            if($this->isRequestFlood($c,$cmd))return;
+            if($this->isRequestFlood($c,$cmd,$params))return;
             if((bool)$this->config->get('trace_requests',true))$this->log->info($this->requestTrace->format($c,$cmd,$params,$fromRoom));
             try{$this->router->handle($c,$cmd,$params,$fromRoom);}
             catch(Throwable $e){$this->log->error("Request {$cmd} from {$c->username}: {$e->getMessage()} @ {$e->getFile()}:{$e->getLine()}");$this->sendRaw($c,['warning','An unknown error occurred.']);}
@@ -1085,8 +1085,16 @@ final class GameServer
     private function sendScheduledServerMessage(): void
     { $message=$this->world->randomServerMessage();if($message!==null){$this->broadcastRaw(['moderator',$message]);$this->log->info('Scheduled server message: '.$message);} }
 
-    private function isRequestFlood(ClientSession $u,string $request): bool
+    private function isRequestFlood(ClientSession $u,string $request,array $params=[]): bool
     {
+        // The Rift panel polls while idle. Only this read-only subcommand gets
+        // a separate throttle; exempting all "cmd" requests would permit abuse.
+        if($request==='cmd'&&strtolower(trim((string)($params[0]??'')))==='rift'&&strtolower(trim((string)($params[1]??'')))==='panel'){
+            $panelNow=microtime(true)*1000;
+            if($panelNow-$u->lastRiftPanelRequestMs<500)return true;
+            $u->lastRiftPanelRequestMs=$panelNow;
+            return false;
+        }
         $now=microtime(true)*1000;$exceptions=(array)$this->config->get('antiflood_request_exceptions',[]);$except=in_array($request,['spendStatPoints','saveStatPoints','resetStatPoints'],true)||in_array($request,$exceptions,true);$filtered=false;
         if(!$except&&$u->lastRequestMs+(float)$this->config->get('antiflood_request_minimum_ms',500)>$now){$u->requestCounter++;if($u->requestCounter>=(int)$this->config->get('antiflood_request_tolerance',3)){$u->requestWarnings++;$u->requestCounter=0;$filtered=true;}}
         else $u->requestCounter=0;
