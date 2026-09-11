@@ -5,3 +5,8 @@ Emulator/PHP/runtime/logs/panel-console.log
 Emulator/PHP/runtime/emulator.pid
 Emulator/PHP/runtime/control/status.json
 web/storage/config.php
+/Emulator/PHP/runtime/control
+Emulator/PHP/runtime/control/status.json
+Emulator/PHP/runtime/intentional.stop
+Emulator/PHP/runtime/logs/panel-console.log
+Emulator/PHP/runtime/logs/process-stdout.log
