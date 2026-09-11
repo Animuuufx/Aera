@@ -13,11 +13,25 @@ package liteAssets
         {
             var result:Array=[];
             if(map==null)return result;
+            collectWalkingAreas(map,result);
+            if(result.length>0)return result;
             for(var i:int=0;i<map.numChildren;i++){
                 var child:DisplayObject=map.getChildAt(i);
                 if(child is MovieClip && "isFloor" in child && Boolean(Object(child).isFloor))result.push(child);
             }
             return result;
+        }
+        private static function collectWalkingAreas(container:DisplayObjectContainer,result:Array):void
+        {
+            // Adventure maps use a walking button; isFloor is primarily house geometry.
+            for(var i:int=0;i<container.numChildren;i++){
+                var child:DisplayObject=container.getChildAt(i);
+                if(child.name=="btnWalkingArea"){
+                    result.push(child);
+                    continue;
+                }
+                if(child is DisplayObjectContainer)collectWalkingAreas(DisplayObjectContainer(child),result);
+            }
         }
         public static function choose(map:DisplayObjectContainer,space:DisplayObjectContainer,seed:uint):Point
         {

@@ -62,7 +62,7 @@ package liteAssets.listOptionsItem
 
         public function onActive(_arg_1:MouseEvent):void
         {
-            r.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown, false, 0, true);
+            r.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeybindKeyDown, false, 0, true);
             r.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseExit, false, 0, true);
             this.txtKey.text = "...";
         }
@@ -70,16 +70,16 @@ package liteAssets.listOptionsItem
         public function onMouseExit(_arg_1:MouseEvent):void
         {
             r.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseExit);
-            r.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+            r.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeybindKeyDown);
             this.txtKey.text = keyDict[sKey];
         }
 
-        public function onKeyDown(_arg_1:KeyboardEvent):void
+        public function handleKeybindKeyDown(_arg_1:KeyboardEvent):void
         {
             _arg_1.preventDefault();
             _arg_1.stopPropagation();
             var _local_2:* = _arg_1.keyCode;
-            r.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+            r.stage.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeybindKeyDown);
             r.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseExit);
             if (((_arg_1.keyCode == Keyboard.ENTER) || (_arg_1.keyCode == 191)))
             {
