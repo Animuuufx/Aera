@@ -1492,6 +1492,7 @@ if($cmd==='level'){
         if(!$q)$msg='Quest not found.';
         elseif((int)$q['Upgrade']===1&&(int)($u->user['UpgradeDays']??0)<=0)$msg='This quest requires membership.';
         elseif((int)$q['Level']>$u->level)$msg='You do not meet the level requirement.';
+        elseif(($storyError=$this->betaStoryError($u,$q,1))!=='')$msg=$storyError;
         else{$u->acceptedQuests[$id]=true;$success=1;}
         $o=['cmd'=>'acceptQuest','QuestID'=>$id,'bSuccess'=>$success];if($msg!=='')$o['msg']=$msg;$this->server->sendJson($u,$o);
     }
@@ -1501,6 +1502,7 @@ if($cmd==='level'){
         $id=(int)($p[0]??0);$choice=(int)($p[1]??0);$quantity=max(1,(int)($p[3]??1));$q=$this->world->quests[$id]??null;
         $fail=function(string $msg='',bool $log=false)use($u,$id){$o=['cmd'=>'ccqr','QuestID'=>$id,'bSuccess'=>0];if($msg!=='')$o['msg']=$msg;$this->server->sendJson($u,$o);if($log)$this->recordViolation($u,'Packet Edit [TryQuestComplete]',$msg);};
         if(!$q){$fail('Quest not found.');return;}
+        if(($storyError=$this->betaStoryError($u,$q,$quantity))!==''){$fail($storyError);return;}
         if((int)$q['Upgrade']===1&&(int)($u->user['UpgradeDays']??0)<=0){$fail('Attempted to complete member-only quest.',true);return;}
         $factionId=(int)$q['FactionID'];if($factionId>1){$rep=(int)$this->db->scalar('SELECT Reputation FROM users_factions WHERE UserID=? AND FactionID=?',[$u->dbId,$factionId],0);if($rep<(int)$q['ReqReputation']){$fail('Attempted to complete a quest without required reputation.',true);return;}}
         $wheel=in_array($id,[1,2],true);if(!isset($u->acceptedQuests[$id])&&!$wheel&&(int)$q['WarID']<=0){$fail('Attempted to complete an unaccepted quest: '.$q['Name'],true);return;}
@@ -1524,7 +1526,7 @@ if($cmd==='level'){
         }
         $this->giveRewards($u,$exp,$gold,$coins,$cp,$repReward,$factionId,$u->sfsUserId,'p');
         if((int)$q['WarID']>0){$points=(int)$q['WarMega']===1?2:1;try{$this->db->run('UPDATE wars SET Points=LEAST(MaxPoints,Points+?) WHERE id=?',[$points,(int)$q['WarID']]);}catch(Throwable){}}
-        if((int)$q['Slot']>0&&$this->questValue($u,(int)$q['Slot'])<(int)$q['Value'])$this->updateQuestValue($u,[(int)$q['Slot'],(int)$q['Value']]);
+        if((int)$q['Slot']>0&&$this->questValue($u,(int)$q['Slot'])<(int)$q['Value'])$this->updateQuestValue($u,[(int)$q['Slot'],(int)$q['Value']],true);
         if((string)$q['Field']!=='')$this->setAchievementField($u,(string)$q['Field'],(int)$q['Index'],1);
         unset($u->acceptedQuests[$id]);
         $rewardObj=['intGold'=>$gold,'intCoins'=>$coins,'intExp'=>$exp,'iCP'=>$cp];if($factionId>0)$rewardObj['iRep']=$repReward;
@@ -2435,8 +2437,17 @@ private function resetStatPoints(ClientSession $u): void
     private function isoDate(mixed $v): string { if(!$v)return date("Y-m-d\\TH:i:s");return str_replace(' ','T',substr((string)$v,0,19)); }
     private function expToLevel(int $level): int { return $this->math->expToLevel($level); }
     private function questStringData(ClientSession $u): void { $this->server->sendJson($u,['cmd'=>'loadQuestStringData','obj'=>['strQuests'=>(string)($u->user['Quests']??''),'strQuests2'=>(string)($u->user['Quests2']??'')]]); }
-    private function updateQuestValue(ClientSession $u,array $p): void
-    { $idx=max(0,(int)($p[0]??0));$requested=(int)($p[1]??0);$val=($requested>=0&&$requested<36)?$requested:0;$field=$idx>99?'Quests2':'Quests';$i=$idx>99?$idx-100:$idx;$str=(string)($u->user[$field]??'');if(strlen($str)<=$i)$str=str_pad($str,$i+1,'0');$char=$val<10?(string)$val:chr(55+$val);$str=substr($str,0,$i).$char.substr($str,$i+1);$this->db->run("UPDATE users SET `{$field}`=? WHERE id=?",[$str,$u->dbId]);$u->user[$field]=$str;$this->server->sendJson($u,['cmd'=>'updateQuest','iIndex'=>$idx,'iValue'=>$val]); }
+    private function betaStoryError(ClientSession $u,array $q,int $quantity): string
+    {
+        if((int)($q['id']??0)<810001||(int)($q['id']??0)>810006)return '';
+        if($quantity!==1)return 'Story quests can only be completed once at a time.';
+        $progress=$this->questValue($u,90);$step=(int)$q['Value'];
+        if($progress<$step-1)return 'Complete the previous Broken Oath quest first.';
+        if($progress>=$step)return 'You have already completed this story quest.';
+        return '';
+    }
+    private function updateQuestValue(ClientSession $u,array $p,bool $serverAward=false): void
+    { if(!$serverAward&&(int)($p[0]??0)===90)return; $idx=max(0,(int)($p[0]??0));$requested=(int)($p[1]??0);$val=($requested>=0&&$requested<36)?$requested:0;$field=$idx>99?'Quests2':'Quests';$i=$idx>99?$idx-100:$idx;$str=(string)($u->user[$field]??'');if(strlen($str)<=$i)$str=str_pad($str,$i+1,'0');$char=$val<10?(string)$val:chr(55+$val);$str=substr($str,0,$i).$char.substr($str,$i+1);$this->db->run("UPDATE users SET `{$field}`=? WHERE id=?",[$str,$u->dbId]);$u->user[$field]=$str;$this->server->sendJson($u,['cmd'=>'updateQuest','iIndex'=>$idx,'iValue'=>$val]); }
     private function removeTempItem(ClientSession $u,array $p): void { $id=(int)($p[0]??0);$qty=max(1,(int)($p[1]??1));$have=(int)($u->temporaryItems[$id]??0);if($have<=0)return;$left=max(0,$have-$qty);if($left>0)$u->temporaryItems[$id]=$left;else unset($u->temporaryItems[$id]);$this->server->sendJson($u,['cmd'=>'removeTempItem','ItemID'=>$id,'iQty'=>$qty,'iQtyNow'=>$left,'bitSuccess'=>1]); }
     private function retrieveMonsterData(ClientSession $u,array $p): void
     { $r=$this->server->currentRoom($u);$mon=[];if($r){foreach($r->monsters as $m)$mon[(string)$m['MonMapID']]=['MonID'=>$m['MonID'],'MonMapID'=>$m['MonMapID'],'intHP'=>$m['HP'],'intHPMax'=>$m['HPMax'],'intMP'=>$m['MP'],'intMPMax'=>$m['MPMax'],'intLevel'=>$m['Level'],'intState'=>$m['state'],'strMonName'=>$m['Name'],'strMonFileName'=>$m['File'],'strLinkage'=>$m['Linkage']];}$this->server->sendJson($u,['cmd'=>'initMonData','mon'=>$mon]); }
