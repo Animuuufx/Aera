@@ -1,0 +1,36 @@
+name: Apply Aera live stats fix
+
+on:
+  push:
+    branches:
+      - Client-Fixes
+    paths:
+      - Aera_Live_Stats_ClientFixes.patch
+      - .github/workflows/apply-live-stats-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Client-Fixes
+        uses: actions/checkout@v4
+        with:
+          ref: Client-Fixes
+          fetch-depth: 0
+
+      - name: Apply live stat sync patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f Aera_Live_Stats_ClientFixes.patch
+          git apply --check Aera_Live_Stats_ClientFixes.patch
+          git apply Aera_Live_Stats_ClientFixes.patch
+          grep -q "Aera live-stat sync" Sources/Client/src/Game.as
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Sources/Client/src/Game.as
+          git commit -m "Fix live stat application without relog"
+          git push origin HEAD:Client-Fixes
