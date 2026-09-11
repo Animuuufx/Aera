@@ -12,10 +12,11 @@ and PvP rooms are excluded. One event runs at a time per named game server.
 3. Republish the client FLA in Adobe Animate with `Sources/Client/src` on its
    source path, and deploy the resulting client SWF through your normal release
    process. The new HUD and `/rift` chat command require this client rebuild.
-   Older clients still receive announcements and fight the event monsters.
+   Dynamic Rift spawning requires the updated client.
 4. Open `/admin/rifts`. Create an encounter using an existing public map and four
-   monster templates: invader, elite, crystal, and Commander. The map must have
-   database monster placements. Use a crystal-looking monster asset for crystals.
+   monster templates: invader, elite, crystal, and Commander. The map must expose
+   walkable floor geometry; Rift spawns need no database monster placements.
+   Use a crystal-looking monster asset for crystals.
    Newly created definitions are enabled for random selection immediately.
 5. Set goals, duration, and base shard rewards through the linked definition
    editor. Add existing reward item IDs and shard costs to the shop. No invented
@@ -53,7 +54,7 @@ arrays; the loader and timeline linkage do not need changes.
   Rift invaders grant one event-only material to each damaging participant per
   kill, up to ten carried. `/rift deposit` or **Deposit materials** consumes these
   materials in the defense cell. These are not tradable inventory items.
-- The first database monster placement defines the defense cell, displayed in
+- The first walkable screen reported by a participant defines the defense cell, displayed in
   the HUD. Alive players in that cell defend the ward; invaders there target
   defenders. Its integrity falls by one per second while undefended until the
   defense objective is complete. A destroyed ward fails the event. This initial
@@ -61,7 +62,7 @@ arrays; the loader and timeline linkage do not need changes.
 - The Commander appears only after every objective completes, or when forced by
   an admin. Starting HP scales from its monster template, tier, mutation, and
   unique contributors at spawn. Health is shared across room copies; additional
-  entrants do not reset it. Other placements contain adds.
+  entrants do not reset it. A randomly selected discovered screen holds the Commander.
 - Shockwaves warn five seconds before striking the Commander's cell. Leave the
   cell to evade. They deal 25% of maximum player HP, rising to 45% below 30% boss
   health. Corrupted Rifts shorten the attack cycle from 20 to 12 seconds.
@@ -146,3 +147,14 @@ At implementation time, the branch already fails its general self-test and
 enhancement marker check; the parity audit reports stale AS3 request manifests,
 missing `EnhItemID` schema declarations, and absent `GAMEFILES_SHA256.txt`.
 Those baseline failures are independent of Rifts.
+
+### Dynamic Rift placement
+
+Normal monsters are removed from public event rooms until the event ends.
+Clients register walkable screens as players enter them; the server generates
+two Rift enemies per screen, up to eight screens. Shared random seeds place
+them on actual floor geometry, without premade monster markers or maps_monsters
+rows. Positions stay consistent for players in the same room. Closing, stopping,
+failing, or expiring the Rift respawns the normal database monsters. Private
+rooms remain unchanged. Republish the game client and restart the emulator;
+no loader rebuild or database migration is needed for this change.

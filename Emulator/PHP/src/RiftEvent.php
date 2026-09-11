@@ -13,6 +13,9 @@ final class RiftEvent
     public array $players=[];
     public float $nextMechanic=0, $strikeAt=0;
     public string $strikeFrame='';
+    public string $commanderFrame='';
+    public string $defenseCell='';
+    public array $areas=[];
     public function __construct(public array $definition, public string $tier, public string $modifier, public float $multiplier, public float $startedAt) {}
 
     public function damage(int $userId,int $amount): void

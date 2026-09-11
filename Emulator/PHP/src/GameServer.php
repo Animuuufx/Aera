@@ -419,7 +419,10 @@ final class GameServer
     public function rooms(): array { return $this->rooms; }
     public function refreshRiftRoom(RoomState $room): void
     {
-        foreach($room->clients as $c){$c->targetMonster=null;if($c->hp>0)$c->state=1;$this->sendMoveToArea($c,$room);}
+        foreach($room->clients as $c){
+            if($c->targetMonster!==null&&!isset($room->monsters[$c->targetMonster])){$c->targetMonster=null;if($c->hp>0)$c->state=1;}
+            $this->sendMoveToArea($c,$room);
+        }
     }
     public function findUser(string $name): ?ClientSession { foreach($this->clients as $c)if($c->authenticated&&strcasecmp($c->username,$name)===0)return $c;return null; }
     public function findUserBySfsId(int $id): ?ClientSession { foreach($this->clients as $c)if($c->authenticated&&$c->sfsUserId===$id)return $c;return null; }
@@ -482,10 +485,13 @@ final class GameServer
         $uo=[];foreach($r->clients as $u)$uo[]=$this->userProps($u);
         $monBranch=[];$monDef=[];$monMap=[];
         foreach($r->monsters as $m){
+            // Separate visual definitions when a Rift reuses a normal monster's asset.
+            if(isset($m['riftId']))$m['MonID']=-1-(int)$m['MonMapID'];
             $monBranch[]=['MonID'=>$m['MonID'],'MonMapID'=>$m['MonMapID'],'bRed'=>$m['Aggresive'],'iLvl'=>$m['Level'],'intHP'=>$m['HP'],'intHPMax'=>$m['HPMax'],'intMP'=>$m['MP'],'intMPMax'=>$m['MPMax'],'intState'=>$m['state'],'wDPS'=>$m['DPS']];
             $monDef[]=['MonID'=>$m['MonID'],'intHP'=>$m['HPMax'],'intHPMax'=>$m['HPMax'],'intLevel'=>$m['Level'],'intMP'=>$m['MPMax'],'intMPMax'=>$m['MPMax'],'strBehave'=>'walk','strLinkage'=>$m['Linkage'],'strMonFileName'=>$m['File'],'strMonName'=>$m['Name']];
             $monPlacement=['MonID'=>$m['MonID'],'MonMapID'=>$m['MonMapID'],'bRed'=>$m['Aggresive'],'intRSS'=>'-1','strFrame'=>$m['Frame'],'dbSpawn'=>!empty($m['DBPosition'])?1:0];
             if(!empty($m['DBPosition'])){$monPlacement['X']=(float)$m['X'];$monPlacement['Y']=(float)$m['Y'];}
+            if(isset($m['riftSpawnSeed']))$monPlacement['riftSpawnSeed']=(int)$m['riftSpawnSeed'];
             $monMap[]=$monPlacement;
         }
         $o=['cmd'=>'moveToArea','areaId'=>$r->id,'areaName'=>$r->name,'sExtra'=>'','strMapFileName'=>$r->map['File'],'strMapName'=>explode('-',$r->name)[0],'uoBranch'=>$uo,'monBranch'=>$monBranch,'intType'=>2];

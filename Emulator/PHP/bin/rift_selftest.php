@@ -53,19 +53,27 @@ setProperty($server,'rooms',[1=>$room,2=>$room2,3=>$private]);
 $config=new Config(dirname(__DIR__));$log=new Logger(sys_get_temp_dir().'/aera-rift-selftest.log');
 $manager=shellOf(RiftManager::class);
 foreach(['server'=>$server,'db'=>$db,'world'=>$world,'config'=>$config,'log'=>$log,'available'=>true,'serverName'=>'Test'] as $key=>$v)setProperty($manager,$key,$v);
-$start=fn($modifier='Blood')=>$manager->control('rift-start',['definition'=>1,'tier'=>'Normal','modifier'=>$modifier,'multiplier'=>1]);
+$visitor=new ClientSession(null,2,'test');$visitor->authenticated=true;$visitor->frame='Enter';
+function riftId(RoomState $room): int { foreach($room->monsters as $id=>$m)if(isset($m['riftId']))return $id;throw new RuntimeException('No Rift monster'); }
+$start=function($modifier='Blood')use($manager,$visitor){
+    $result=$manager->control('rift-start',['definition'=>1,'tier'=>'Normal','modifier'=>$modifier,'multiplier'=>1]);
+    if($result['ok'])foreach([1,2] as $id){$visitor->roomId=$id;$visitor->frame='Enter';$manager->enterArea($visitor,'Enter');}
+    return $result;
+};
 check(!$manager->control('rift-start',['definition'=>999])['ok'],'Unknown definitions rejected');
 check(!$manager->control('rift-start',['definition'=>1,'multiplier'=>-1])['ok'],'Invalid multiplier rejected');
 check($start()['ok'],'Configured event starts');check(!$start()['ok'],'Overlapping event rejected');
 check(isset($room->meta['rift'])&&isset($room2->meta['rift'])&&!isset($private->meta['rift']),'Public rooms participate; private rooms untouched');
-check($room->monsters[1]['DPS']===13,'Blood damage multiplier');
+check(!isset($room->monsters[1])&&count($room->monsters)===2,'Native monsters removed while Rift is active');
+check($room->monsters[riftId($room)]['riftSpawnSeed']>0,'Dynamic spawn includes shared random seed');
+check($room->monsters[riftId($room)]['DPS']===13,'Blood damage multiplier');
 $u=new ClientSession(null,1,'test');$u->dbId=42;$u->sfsUserId=7;
-$m=&$room->monsters[1];$manager->hit($u,$m,10000);$m['HP']=0;$manager->killed($m);
+$m=&$room->monsters[riftId($room)];$manager->hit($u,$m,10000);$m['HP']=0;$manager->killed($m);
 $saved=(new ReflectionProperty($manager,'event'))->getValue($manager);check($saved->players[42]['damage']===100,'Overkill contribution is clamped');
 check($manager->control('rift-boss',[])['ok'],'Admin commander transition');
-$m=&$room->monsters[1];$manager->hit($u,$m,20);$m['HP']-=20;
-check($room2->monsters[1]['HP']===$m['HP'],'Commander damage shared across rooms');
-$manager->hit(null,$m,10,42);$m['HP']-=10;check($room2->monsters[1]['HP']===$m['HP'],'Disconnected DoT owner retains contribution and shared damage');
+$m=&$room->monsters[riftId($room)];$manager->hit($u,$m,20);$m['HP']-=20;
+check($room2->monsters[riftId($room2)]['HP']===$m['HP'],'Commander damage shared across rooms');
+$manager->hit(null,$m,10,42);$m['HP']-=10;check($room2->monsters[riftId($room2)]['HP']===$m['HP'],'Disconnected DoT owner retains contribution and shared damage');
 $manager->hit($u,$m,10000);$m['HP']=0;$manager->killed($m);
 $manager->tick(microtime(true)+2);
 check(!$manager->status()['active'],'Commander death completes event');
@@ -73,9 +81,9 @@ check((int)$pdo->query('SELECT COUNT(*) FROM rift_rewards')->fetchColumn()===1,'
 $balance=(int)$pdo->query('SELECT Shards FROM users_rifts')->fetchColumn();check($balance>0,'Offline participant wallet credited');
 $manager->finish('closed');check((int)$pdo->query('SELECT Shards FROM users_rifts')->fetchColumn()===$balance,'Repeated completion never double credits');
 check(!isset($room->meta['rift'])&&$room->monsters[1]['Name']==='Monster 1','Normal monsters restored');
-check($start('Titan')['ok']&&$room->monsters[1]['HPMax']===250,'Titan scales HP');
+check($start('Titan')['ok']&&$room->monsters[riftId($room)]['HPMax']===250,'Titan scales HP');
 $manager->control('rift-stop',[]);check((int)$pdo->query('SELECT COUNT(*) FROM rift_rewards')->fetchColumn()===1,'Cancelled events pay no rewards');
-check($start('Swift')['ok']&&$room->monsters[1]['Speed']===1300,'Swift reduces attack interval');
+check($start('Swift')['ok']&&$room->monsters[riftId($room)]['Speed']===1300,'Swift reduces attack interval');
 $manager->tick(microtime(true)+1000);check(!$manager->status()['active'],'Expired event is cleaned up');
 setProperty($manager,'lastTick',0);
 check($start('Arcane')['ok'],'Arcane event starts');
@@ -101,4 +109,12 @@ setProperty($manager,'lastTick',0);$start();$e=(new ReflectionProperty($manager,
 $manager->tick(microtime(true)+1);check(!$manager->status()['active'],'Undefended ward failure ends event');
 $start();$activeId=$manager->status()['id'];$manager->recoverStartup();
 check($pdo->query('SELECT Status FROM rift_events WHERE id='.(int)$activeId)->fetchColumn()==='interrupted','Startup recovery marks abandoned event interrupted');
+$manager->finish('cancelled');
+$world->mapMonsterRows=[];
+check($start()['ok'],'Map without database monster placements supports Rifts');
+$visitor->roomId=1;$visitor->frame='UnconfiguredForest';$manager->enterArea($visitor,$visitor->frame);
+check(count($room->monsters)===4,'Runtime screen spawns enemies without premade cells');
+$manager->enterArea($visitor,$visitor->frame);check(count($room->monsters)===4,'Repeated screen report is idempotent');
+$manager->enterArea($visitor,'SpoofedCell');check(count($room->monsters)===4,'Remote screen report rejected');
+$manager->finish('cancelled');check($room->monsters===[],'Empty native map restored on cancellation');
 echo "Aera Rifts: {$checks} checks passed.\n";
