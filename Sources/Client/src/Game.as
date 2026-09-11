@@ -72,6 +72,7 @@ import flash.system.ApplicationDomain;
     public class Game extends MovieClip 
     {
         private var aeraRiftHUD:liteAssets.draw.riftHUD;
+        private var aeraRiftPanel:liteAssets.draw.riftPanel;
 
 
         public static var ISWEB:Boolean = true;
@@ -419,6 +420,7 @@ import flash.system.ApplicationDomain;
             };
             var onConnectionLostHandler:Function = function (_arg_1:SFSEvent)
             {
+                if (aeraRiftPanel != null) aeraRiftPanel.reset();
                 var _local_2:Boolean;
                 if (!serialCmdMode)
                 {
@@ -481,6 +483,7 @@ import flash.system.ApplicationDomain;
             };
             var onLogoutHandler:Function = function (_arg_1:SFSEvent)
             {
+                if (aeraRiftPanel != null) aeraRiftPanel.reset();
                 if (!serialCmdMode)
                 {
                     if (world != null)
@@ -3692,6 +3695,13 @@ import flash.system.ApplicationDomain;
                         case "riftState":
                             updateRiftHUD(resObj);
                             break;
+                        case "riftPanel":
+                            if (aeraRiftPanel != null) aeraRiftPanel.update(resObj);
+                            break;
+                        case "riftPurchase":
+                            if (aeraRiftPanel != null) aeraRiftPanel.purchaseResult(resObj);
+                            if (resObj.ok && world != null) world.getInventory(sfc.myUserId);
+                            break;
                         case "uotls":
                             userTreeWrite(resObj.unm, resObj.o);
                             break;
@@ -4943,6 +4953,26 @@ import flash.system.ApplicationDomain;
                 addChild(aeraRiftHUD);
             }
             aeraRiftHUD.update(state);
+            if (aeraRiftPanel != null) aeraRiftPanel.updateActive(state);
+        }
+
+        public function toggleRiftPanel():void
+        {
+            if (aeraRiftPanel == null)
+            {
+                aeraRiftPanel = new liteAssets.draw.riftPanel(sendRiftPanelCommand);
+                addChild(aeraRiftPanel);
+            }
+            else if (aeraRiftPanel.visible) { aeraRiftPanel.visible = false; return; }
+            aeraRiftPanel.visible = true;
+            setChildIndex(aeraRiftPanel, numChildren - 1);
+            aeraRiftPanel.refresh();
+        }
+
+        private function sendRiftPanelCommand(args:Array):void
+        {
+            if (sfc == null || world == null) return;
+            sfc.sendXtMessage("zm", "cmd", ["rift"].concat(args), "str", world.curRoom);
         }
 
         private function sendRiftCommand(command:String):void
@@ -12116,6 +12146,7 @@ import flash.system.ApplicationDomain;
 
         public function logout():void
         {
+            if (aeraRiftPanel != null) aeraRiftPanel.reset();
             if (aeraRiftHUD != null) aeraRiftHUD.visible = false;
             if (((intChatMode) && (chatF.bTall)))
             {

@@ -27,6 +27,14 @@ package
             super();
             btnOpen = _arg_2;
             rootClass = _arg_3;
+            // Add at runtime so older FLA timeline button arrays get the new entry too.
+            if (_arg_1.length > 0 && (_arg_2 == "btnChar" || _arg_1[_arg_1.length - 1].txt == "Your Hero"))
+            {
+                _arg_1 = _arg_1.concat();
+                var hasRift:Boolean = false;
+                for each (var entry:Object in _arg_1) if (entry.fct == "rootClass.toggleRiftPanel") hasRift = true;
+                if (!hasRift) _arg_1.splice(_arg_1.length - 1, 0, {"txt":"Rift", "fct":"rootClass.toggleRiftPanel"});
+            }
             mcMenu = new MovieClip();
             _local_4 = (new menuBottom() as MovieClip);
             _local_4.height--;
@@ -174,4 +182,3 @@ package
 
     }
 }//package 
-

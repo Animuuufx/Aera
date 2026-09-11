@@ -229,6 +229,15 @@ final class RiftManager
     public function playerCommand(ClientSession $u,array $args): void
     {
         $action=strtolower((string)($args[0]??'status'));
+        if($action==='panel'){$this->sendPanel($u,(int)($args[1]??0),(int)($args[2]??0));return;}
+        if($action==='buy'){
+            try{
+                if(!$this->available)throw new RuntimeException('Rifts are not installed yet.');
+                (new RiftShop($this->db))->buy($u,(int)($args[1]??0),(string)($args[2]??''));
+                $this->server->sendJson($u,['cmd'=>'riftPurchase','ok'=>true,'message'=>'Purchased! Your reward is in your inventory.']);
+            }catch(Throwable $e){$this->server->sendJson($u,['cmd'=>'riftPurchase','ok'=>false,'message'=>$e instanceof RuntimeException&&!($e instanceof \PDOException)?$e->getMessage():'Purchase failed. Refresh the shop and try again.']);}
+            $this->sendPanel($u,(int)($args[3]??0),(int)($args[4]??0));return;
+        }
         if($action==='join'&&$this->event){$this->server->joinGameRoom($u,(string)$this->event->definition['Map']);return;}
         if($action==='deposit'&&$this->event){
             $r=$this->server->currentRoom($u);$first=$r?reset($r->monsters):false;
@@ -238,6 +247,24 @@ final class RiftManager
         $s=$this->status();$this->server->sendJson($u,$s);
         $wallet=$this->available?$this->db->one('SELECT * FROM users_rifts WHERE UserID=?',[$u->dbId]):null;
         $this->server->sendRaw($u,['server',($s['active']?$s['modifier'].' Rift: '.$s['map'].' | '.$s['phase'].' '.$s['progress'].'%. ':'No active Rift. ').'Rift Shards: '.(int)($wallet['Shards']??0).'. /rift join | /rift deposit | Shard shop: /rifts on the website.']);
+    }
+    public function sendPanel(ClientSession $u,int $historyPage=0,int $shopPage=0): void
+    {
+        if(!$this->available){$this->server->sendJson($u,['cmd'=>'riftPanel','available'=>false]);return;}
+        $historyCount=(int)$this->db->scalar('SELECT COUNT(*) FROM rift_rewards WHERE UserID=?',[$u->dbId]);
+        $shopCount=(int)$this->db->scalar('SELECT COUNT(*) FROM rift_shop s JOIN items i ON i.id=s.ItemID WHERE s.Enabled=1 AND s.Cost>0 AND s.Quantity>0');
+        $historyPage=max(0,min($historyPage,max(0,(int)ceil($historyCount/6)-1)));
+        $shopPage=max(0,min($shopPage,max(0,(int)ceil($shopCount/6)-1)));
+        $wallet=$this->db->one('SELECT Shards,RiftsClosed,LegendaryClosed,BossesDefeated,HighestContribution FROM users_rifts WHERE UserID=?',[$u->dbId])??['Shards'=>0,'RiftsClosed'=>0,'LegendaryClosed'=>0,'BossesDefeated'=>0,'HighestContribution'=>0];
+        $totals=$this->db->one('SELECT COALESCE(SUM(Damage),0) Damage,COALESCE(SUM(Kills),0) Kills,COALESCE(SUM(Objectives),0) Objectives,COALESCE(SUM(Shards),0) Earned FROM rift_rewards WHERE UserID=?',[$u->dbId]);
+        $spent=(int)$this->db->scalar('SELECT COALESCE(SUM(Cost),0) FROM rift_purchases WHERE UserID=?',[$u->dbId]);
+        $history=$this->db->all('SELECT r.Score,r.Medal,r.Shards,r.Damage,r.Kills,r.Objectives,e.Map,e.Tier,e.Modifier,e.EndedAt FROM rift_rewards r JOIN rift_events e ON e.id=r.EventID WHERE r.UserID=? ORDER BY r.EventID DESC LIMIT 6 OFFSET '.($historyPage*6),[$u->dbId]);
+        $shop=$this->db->all('SELECT s.id,s.Cost,s.Quantity,i.Name,i.Type,i.Level FROM rift_shop s JOIN items i ON i.id=s.ItemID WHERE s.Enabled=1 AND s.Cost>0 AND s.Quantity>0 ORDER BY s.Cost,s.id LIMIT 6 OFFSET '.($shopPage*6));
+        if($u->riftShopToken==='')$u->riftShopToken=bin2hex(random_bytes(32));
+        $this->server->sendJson($u,['cmd'=>'riftPanel','available'=>true,'wallet'=>$wallet,'totals'=>$totals,'spent'=>$spent,
+            'active'=>$this->status(),'contribution'=>$this->event?->players[$u->dbId]??['damage'=>0,'kills'=>0,'objectives'=>0,'materials'=>0],
+            'history'=>$history,'historyPage'=>$historyPage,'historyPages'=>max(1,(int)ceil($historyCount/6)),
+            'shop'=>$shop,'shopPage'=>$shopPage,'shopPages'=>max(1,(int)ceil($shopCount/6)),'token'=>$u->riftShopToken]);
     }
     private function save(): void
     { if($this->event)$this->db->run('UPDATE rift_events SET State=? WHERE id=? AND Status=\'active\'',[json_encode($this->event,JSON_THROW_ON_ERROR),$this->id]); }

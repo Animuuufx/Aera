@@ -70,6 +70,7 @@ final class ClientSession
     public array $partyInvites=[];
     public ?int $duelInviteFrom=null;
     public ?int $tradeTarget=null;
+    public string $riftShopToken='';
     /** @var array<int,bool> SmartFox user IDs that requested a trade with this player. */
     public array $tradeRequests=[];
     public array $tradeItems=[];

@@ -31,6 +31,17 @@ exists. `rift_min_interval` and `rift_max_interval` are configurable seconds.
 
 ## Player experience
 
+Open the character (`btnChar`) **Your Hero → Rift** menu for the in-game panel.
+Overview shows shards, lifetime statistics, and current contribution/materials;
+History pages through personal completed-event rewards; Rift Shop pages through
+the same listings configured on `/admin/rifts`. The open panel refreshes every
+five seconds. Purchases require Buy then Confirm, debit shards atomically, and
+refresh inventory immediately. Leave combat and finish any trade before buying.
+No additional SQL migration is required for this panel/shop update. Deploy the
+updated emulator (including `RiftShop.php`), restart it, and republish the client.
+The menu entry is inserted by `interfaceMenu.as`, including for older FLA button
+arrays; the loader and timeline linkage do not need changes.
+
 - All online players receive the opening announcement and a HUD with location,
   phase, shared progress, mutation, and contributor count. Late joiners receive
   current state. `/rift` shows status and the player's shard balance.
@@ -125,6 +136,8 @@ phase progression, account rewards, overkill, shared health, disconnected DoTs,
 low-level objectives, mutations, telegraphs, rollback/retry, and cleanup.
 Run `php web/tests/rift_shop_selftest.php` for purchase replay, inventory limits,
 account restrictions, balance checks, and atomic inventory/wallet rollback.
+Run `php Emulator/PHP/bin/rift_shop_selftest.php` for the in-game shop and personal
+panel responses, pagination, replay protection, and inventory/account restrictions.
 SQLite adapts MySQL locking/upsert syntax for the test; a staging MySQL/game-client
 playtest is still necessary to validate deployment, assets, and real concurrency.
 
