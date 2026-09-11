@@ -1,0 +1,1286 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "WebInspector",
+      "version": "537.36"
+    },
+    "pages": [],
+    "entries": [
+      {
+        "startedDateTime": "2015-07-20T23:18:42.125Z",
+        "time": 539.5000000717118,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/classes/M/DoomRabbit.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; _gat=1; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_gat",
+              "value": "1",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 596,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:19:27 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Mon, 18 May 2015 05:05:25 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"c5b2f03f2891d01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "204104"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 204104,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 278,
+          "bodySize": 204104,
+          "_transferSize": 204382
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 1.00000004749745,
+          "dns": -1,
+          "connect": -1,
+          "send": 18.00000004004685,
+          "wait": 214.9999999674037,
+          "receive": 305.5000000167638,
+          "ssl": -1
+        },
+        "connection": "220670"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:18:58.953Z",
+        "time": 188.0000000819564,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/helms/DoomRabbitHood.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; _gat=1; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_gat",
+              "value": "1",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 602,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:19:44 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Mon, 18 May 2015 05:19:20 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"2a1a9a312a91d01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "5920"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 5920,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 276,
+          "bodySize": 5920,
+          "_transferSize": 6196
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 1.00000004749745,
+          "dns": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 184.99999993946355,
+          "receive": 2.000000094995386,
+          "ssl": -1
+        },
+        "connection": "220670"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:25:36.228Z",
+        "time": 976.4999999897555,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/swords/DarkDisasterOfValoth1.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 602,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:26:22 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Wed, 01 Jul 2015 06:36:03 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"e2b69033c8b3d01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "17258"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 17258,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 277,
+          "bodySize": 17258,
+          "_transferSize": 17535
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 1.99999997857958,
+          "dns": 81.00000000558792,
+          "connect": 199.99999995343347,
+          "send": 1.0000000474980197,
+          "wait": 285.000000032596,
+          "receive": 407.49999997206044,
+          "ssl": -1
+        },
+        "connection": "221203"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:26:54.318Z",
+        "time": 238.0000000121072,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/swords/NecroticBladeOfDoom2.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 601,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:27:40 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Wed, 13 May 2015 07:02:45 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"646c37d04a8dd01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "8662"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 8662,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 276,
+          "bodySize": 8662,
+          "_transferSize": 8938
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 1.00000004749745,
+          "dns": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 228.00000000279354,
+          "receive": 8.9999999618162,
+          "ssl": -1
+        },
+        "connection": "221203"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:28:03.434Z",
+        "time": 312.00000003445894,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/swords/BlueHanzoVoidSword.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 599,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:28:49 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Sun, 01 Feb 2015 10:07:59 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"a34d2bf563ed01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "5531"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 5531,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 275,
+          "bodySize": 5531,
+          "_transferSize": 5806
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 1.00000004749745,
+          "dns": -1,
+          "connect": -1,
+          "send": 0.9999999310821299,
+          "wait": 309.0000000083824,
+          "receive": 1.0000000474969397,
+          "ssl": -1
+        },
+        "connection": "221203"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:28:14.588Z",
+        "time": 258.4999999962747,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/daggers/TyndareousSpearSword.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 602,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:28:59 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Sat, 14 Feb 2015 03:39:47 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"518d6fe1748d01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "12802"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 12802,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 276,
+          "bodySize": 12802,
+          "_transferSize": 13078
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 1.00000004749745,
+          "dns": -1,
+          "connect": -1,
+          "send": 0.9999999310821299,
+          "wait": 249.00000006891742,
+          "receive": 7.499999948777713,
+          "ssl": -1
+        },
+        "connection": "221203"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:28:21.560Z",
+        "time": 396.99999999720603,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/daggers/ConquestAccoutrements.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 603,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:29:07 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Mon, 09 Mar 2015 11:30:08 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"995cc6655c5ad01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "10092"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 10092,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 277,
+          "bodySize": 10092,
+          "_transferSize": 10369
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 12.9999999189749,
+          "dns": -1,
+          "connect": -1,
+          "send": 1.0000000474974993,
+          "wait": 381.9999999832366,
+          "receive": 1.0000000474970534,
+          "ssl": -1
+        },
+        "connection": "221203"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:28:29.414Z",
+        "time": 358.0000000074506,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/daggers/MiltonPoolTalonCyber3.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 603,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:29:15 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Mon, 18 May 2015 04:55:22 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"8dea98d82691d01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "4570"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 4570,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 276,
+          "bodySize": 4570,
+          "_transferSize": 4846
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 2.99100007396191,
+          "dns": -1,
+          "connect": -1,
+          "send": 0.9969999082386498,
+          "wait": 353.01399999298144,
+          "receive": 0.9980000322685783,
+          "ssl": -1
+        },
+        "connection": "221203"
+      },
+      {
+        "startedDateTime": "2015-07-20T23:30:03.619Z",
+        "time": 235.9999999171123,
+        "request": {
+          "method": "GET",
+          "url": "http://augoeides.org/gamefiles/items/polearms/ChaosDragonMasterScythe.swf",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Cookie",
+              "value": "PHPSESSID=avhp6k93061mne37idmdbfggs4; _ga=GA1.2.1131828099.1437434127; __test; noadvtday=0; udata=id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, sdch"
+            },
+            {
+              "name": "Host",
+              "value": "augoeides.org"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.8"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Referer",
+              "value": "http://augoeides.org/game?session=E7C30B603DB0808149A627A29A6B5FB0"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "ShockwaveFlash/18.0.0.209"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "queryString": [],
+          "cookies": [
+            {
+              "name": "PHPSESSID",
+              "value": "avhp6k93061mne37idmdbfggs4",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "_ga",
+              "value": "GA1.2.1131828099.1437434127",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "noadvtday",
+              "value": "0",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            },
+            {
+              "name": "udata",
+              "value": "id%3D263018%26token%3D29cef8ced43e6950f4eb9a11e2adf7ff",
+              "expires": null,
+              "httpOnly": false,
+              "secure": false
+            }
+          ],
+          "headersSize": 606,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Date",
+              "value": "Mon, 20 Jul 2015 23:30:48 GMT"
+            },
+            {
+              "name": "Last-Modified",
+              "value": "Sun, 28 Jun 2015 09:12:11 GMT"
+            },
+            {
+              "name": "Server",
+              "value": "Microsoft-IIS/8.5"
+            },
+            {
+              "name": "ETag",
+              "value": "\"69e48482b1d01:0\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-shockwave-flash"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "max-age=604800"
+            },
+            {
+              "name": "Accept-Ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "Content-Length",
+              "value": "6112"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 6112,
+            "mimeType": "application/x-shockwave-flash",
+            "compression": 0
+          },
+          "redirectURL": "",
+          "headersSize": 274,
+          "bodySize": 6112,
+          "_transferSize": 6386
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 0.99999993108213,
+          "dns": -1,
+          "connect": -1,
+          "send": 1.00000004749745,
+          "wait": 229.9999999813734,
+          "receive": 3.9999999571593037,
+          "ssl": -1
+        },
+        "connection": "221203"
+      }
+    ]
+  }
+}
