@@ -1,0 +1,18 @@
+﻿<flash_project name="~Prometheus2" version="1">
+	<project_file filetype="fla" path="./~Prometheus2.fla" profile=""/>
+	<project_file filetype="as" path="./Prometheus2MChest.as"/>
+	<project_file filetype="as" path="./Prometheus2MFoot.as"/>
+	<project_file filetype="as" path="./Prometheus2MFootIdle.as"/>
+	<project_file filetype="as" path="./Prometheus2MHand.as"/>
+	<project_file filetype="as" path="./Prometheus2MHead.as"/>
+	<project_file filetype="as" path="./Prometheus2MHip.as"/>
+	<project_file filetype="as" path="./Prometheus2MRobe.as"/>
+	<project_file filetype="as" path="./Prometheus2MRobeBack.as"/>
+	<project_file filetype="as" path="./Prometheus2MShin.as"/>
+	<project_file filetype="as" path="./Prometheus2MShoulder.as"/>
+	<project_file filetype="as" path="./Prometheus2MThigh.as"/>
+	<project_file filetype="as" path="./Prometheus2_fla/Symbol1king1_32.as"/>
+	<project_file filetype="as" path="./Prometheus2_fla/Symbol2sadfasdf_33.as"/>
+	<project_file filetype="as" path="./Prometheus2_fla/Symbol84_34.as"/>
+	<project_file filetype="as" path="./Prometheus2_fla/game_1_Male_42.as"/>
+</flash_project>

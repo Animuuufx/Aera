@@ -1,0 +1,26 @@
+﻿<flash_project name="~NeoFiendCS5_skin" version="1">
+	<project_file path="./~NeoFiendCS5_skin.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./CelticDestroyerMHand.as" filetype="as"/>
+	<project_file path="./CelticDestroyerMShin.as" filetype="as"/>
+	<project_file path="./CelticDestroyerMShoulder.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol3asdfsadf_6.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol4zxcvzx_7.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol79_29.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol80_28.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol81_23.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol81copy_41.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol82_22.as" filetype="as"/>
+	<project_file path="./CelticDestroyer_fla/Symbol9shin_40.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MChest.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MFoot.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MFootIdle.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MHand.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MHead.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MHip.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MRobe.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MRobeBack.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MShin.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MShoulder.as" filetype="as"/>
+	<project_file path="./NeoFiendCS51MThigh.as" filetype="as"/>
+	<project_file path="./NeoFiendCS5_skin_fla/Symbol91_19.as" filetype="as"/>
+</flash_project>

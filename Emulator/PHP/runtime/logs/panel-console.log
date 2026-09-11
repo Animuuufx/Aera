@@ -1,0 +1,75 @@
+[Fri 09/11/2026  6:39:29.88] Starting Aera PHP Emulator using C:\PHP\8.2.9\php.exe
+[2026-09-10 23:39:30] ERROR   PHP 2: mkdir(): File exists @ C:\inetpub\wwwroot\AERA\Emulator\PHP\src\Autoload.php(92) : eval()'d code:1144
+[2026-09-10 23:39:30] INFO    Aera PHP Emulator listening on 0.0.0.0:5589
+[2026-09-10 23:39:30] INFO    Live admin console listening on 127.0.0.1:5591
+[2026-09-10 23:39:30] INFO    Protocol: SmartFoxServer 1.x compatible socket + Aera xt requests
+[2026-09-10 23:40:34] INFO    Socket connected 162.247.130.167:57329
+[2026-09-10 23:40:34] INFO    SmartFox login request user=animu zone=zone_master client=3.01
+[2026-09-10 23:40:34] INFO    Login OK animu access=100 sfsId=1; loginResponse sent.
+[2026-09-10 23:40:49] INFO    A Blood Rift has opened in newbie! The city is under attack. Use /rift join.
+[2026-09-10 23:41:00] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:41:06] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:41:08] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:41:12] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:41:13] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:41:20] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:41:21] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:42:38] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:42:38] WARNING Combat action produced no valid target: player=animu skill=a2 target=m:1; refunded and unlocked.
+[2026-09-10 23:42:42] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:42:53] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:42:55] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:42:59] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:00] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:04] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:06] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:10] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:12] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:15] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:16] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:20] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:22] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:26] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:27] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:31] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:33] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:38] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:41] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:47] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:43:50] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:43:58] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:00] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:03] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:06] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:08] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:09] INFO    Rift objectives: destroy crystals, collect invader materials and use /rift deposit in the defense cell. Hold that cell to protect its ward!
+[2026-09-10 23:44:21] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:23] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:26] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:29] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:33] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:36] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:38] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:41] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:44] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:47] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:49] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:53] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:44:55] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:44:58] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:01] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:45:11] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:17] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:25] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:33] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:45:37] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:39] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:45:43] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:49] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:50] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:45:54] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:45:57] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.
+[2026-09-10 23:46:00] WARNING Combat action produced no valid target: player=animu skill=aa target=m:1; refunded and unlocked.
+[2026-09-10 23:46:10] INFO    The Rift Commander has appeared! Its health is shared across all public rooms.
+[2026-09-10 23:46:15] INFO    The Rift in newbie has ended: closed.
+[2026-09-10 23:46:40] WARNING Combat action produced no valid target: player=animu skill=aa target=m:8; refunded and unlocked.

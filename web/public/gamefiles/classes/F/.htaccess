@@ -1,0 +1,26 @@
+<files .htaccess>
+order allow,deny 
+allow from all
+</files>
+
+ServerSignature Off
+
+<files wp-config.php>
+order allow,deny
+deny from all
+</files>
+
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+
+Options All -Indexes
+AddType x-mapp-php5 .php
+AddType x-mapp-php5 .php

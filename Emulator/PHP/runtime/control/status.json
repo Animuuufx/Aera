@@ -1,1 +1,1 @@
-{"supervisorPid":11404,"heartbeat":"2026-09-11T06:38:20.1920975+00:00","desired":"stopped","running":false,"emulatorPid":null,"watchdogRunning":false,"watchdogPid":null,"lastAction":"start"}
+{"supervisorPid":8164,"heartbeat":"2026-09-11T06:55:55.5387284+00:00","desired":"running","running":true,"emulatorPid":7928,"watchdogRunning":true,"watchdogPid":9424,"lastAction":"supervisor started"}
