@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS `aera_content_packs` (
   `InstalledAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- MySQL 5.7 cannot reopen a TEMPORARY TABLE when the same statement reads it more than once
--- (for example, the UNION ALL used for quest rewards below). Use a throwaway normal staging table instead.
+-- Use a throwaway normal staging table for MySQL 5.7 compatibility.
+-- Reward inserts are split into separate statements to avoid UNION collation coercion
+-- against older Aera schemas that may contain mixed collations.
 DROP TABLE IF EXISTS `hf_polish`;
 CREATE TABLE `hf_polish` (
   `seq` int NOT NULL PRIMARY KEY,
@@ -98,8 +99,9 @@ BEGIN
     -- Milestone class rewards from v30_82 remain on quests 824009, 824019 and 824039 as additional rewards.
     INSERT INTO `quests_rewards` (`id`,`QuestID`,`ItemID`,`Quantity`,`Rate`,`RewardType`)
       SELECT 829000+(z.`seq`-1)*2,824000+(z.`seq`-1)*2,822000+(z.`seq`-1)*2,1,1,'S'
-      FROM `hf_polish` z
-      UNION ALL
+      FROM `hf_polish` z;
+
+    INSERT INTO `quests_rewards` (`id`,`QuestID`,`ItemID`,`Quantity`,`Rate`,`RewardType`)
       SELECT 829001+(z.`seq`-1)*2,824001+(z.`seq`-1)*2,822001+(z.`seq`-1)*2,1,1,'S'
       FROM `hf_polish` z;
 
