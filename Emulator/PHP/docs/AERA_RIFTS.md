@@ -14,8 +14,8 @@ and PvP rooms are excluded. One event runs at a time per named game server.
    process. The new HUD and `/rift` chat command require this client rebuild.
    Dynamic Rift spawning requires the updated client.
 4. Open `/admin/rifts`. Create an encounter using an existing public map and four
-   monster templates: invader, elite, crystal, and Commander. The map must expose
-   walkable floor geometry; Rift spawns need no database monster placements.
+   monster templates: invader, elite, crystal, and Commander. Rift spawns need no
+   database monster placements. Unrestricted maps need no floor markers either.
    Use a crystal-looking monster asset for crystals.
    Newly created definitions are enabled for random selection immediately.
 5. Set goals, duration, and base shard rewards through the linked definition
@@ -153,7 +153,8 @@ Those baseline failures are independent of Rifts.
 Normal monsters are removed from public event rooms until the event ends.
 Clients register walkable screens as players enter them; the server generates
 two Rift enemies per screen, up to eight screens. Shared random seeds place
-them on actual floor geometry, without premade monster markers or maps_monsters
+them on floor geometry when available, or within the lower native 960x550
+playfield on unrestricted maps, without premade monster markers or maps_monsters
 rows. Positions stay consistent for players in the same room. Closing, stopping,
 failing, or expiring the Rift respawns the normal database monsters. Private
 rooms remain unchanged. Republish the game client and restart the emulator;

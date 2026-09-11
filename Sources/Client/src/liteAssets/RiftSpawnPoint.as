@@ -36,9 +36,15 @@ package liteAssets
         public static function choose(map:DisplayObjectContainer,space:DisplayObjectContainer,seed:uint):Point
         {
             var surfaces:Array=floors(map);
-            if(surfaces.length==0||space==null)return null;
+            if(map==null||space==null)return null;
             var state:uint=seed==0?1:seed;
             var nextSeededValue:Function=function():Number { state^=state<<13;state^=state>>>17;state^=state<<5;return Number(state)/4294967296; };
+            if(surfaces.length==0){
+                // Unrestricted maps have no floor markers. Use the lower playfield
+                // in native map coordinates, independent of window scaling.
+                var fallback:Point=new Point(96+nextSeededValue()*768,275+nextSeededValue()*190);
+                return space.globalToLocal(map.localToGlobal(fallback));
+            }
             for(var attempt:int=0;attempt<256;attempt++){
                 var surface:DisplayObject=surfaces[int(nextSeededValue()*surfaces.length)];
                 var bounds:Rectangle=surface.getBounds(space);

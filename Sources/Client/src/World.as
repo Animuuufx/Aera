@@ -44,7 +44,7 @@ import flash.net.URLLoaderDataFormat;
         public function registerRiftArea(state:Object):void
         {
             if(!state.active){riftAreaRegistration="";return;}
-            if(strMapName==null||strMapName.toLowerCase()!=String(state.map).toLowerCase()||RiftSpawnPoint.floors(map).length==0)return;
+            if(map==null||strFrame==null||strFrame==""||strMapName==null||strMapName.toLowerCase()!=String(state.map).toLowerCase())return;
             var key:String=String(state.id)+":"+curRoom+":"+strFrame;
             if(key==riftAreaRegistration)return;
             riftAreaRegistration=key;
