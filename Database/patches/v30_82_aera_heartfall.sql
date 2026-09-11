@@ -4,13 +4,15 @@
 
 CREATE TABLE IF NOT EXISTS `aera_content_packs` (`Name` varchar(64) NOT NULL PRIMARY KEY, `InstalledAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-DROP TEMPORARY TABLE IF EXISTS `hf_zone`;
-CREATE TEMPORARY TABLE `hf_zone` (
+-- MySQL 5.7 cannot reopen the same TEMPORARY TABLE more than once in one statement.
+-- Heartfall intentionally reuses this staging data in UNION ALLs/subqueries, so use throwaway normal tables.
+DROP TABLE IF EXISTS `hf_zone`;
+CREATE TABLE `hf_zone` (
   `seq` int NOT NULL PRIMARY KEY, `mapkey` varchar(32) NOT NULL, `title` varchar(64) NOT NULL, `swf` varchar(128) NOT NULL,
   `npc` varchar(64) NOT NULL, `job` varchar(64) NOT NULL, `slogan` text NOT NULL,
   `mob` varchar(64) NOT NULL, `boss` varchar(64) NOT NULL, `mobtoken` varchar(64) NOT NULL, `bosstoken` varchar(64) NOT NULL,
   `armorname` varchar(64) NOT NULL, `swordname` varchar(64) NOT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 INSERT INTO `hf_zone` VALUES
 (1,'aerawake','Aera Wake','tutorial-ani.swf','Echo Scribe Mira','Echo Scribe','You woke beneath a sky split by silver fire. Follow the echoes, learn to fight, and carry this message to Auralis.','Fracture Wisp','Fallen Wakeguard','Echo Dust','Broken Wake Sigil','Wakebound Garb','Echoedge'),
 (2,'auralis','Auralis','Auralis_BattleonReplacement_FINAL.swf','Warden Lyra','Auralis Warden','The Aera Heart shattered last night. Every road is changing. We need someone untouched by the old oaths to trace the first shard.','Heartfall Marauder','Riftbound Captain','Rift Mark','Captain''s Seal','Auralis Recruit Garb','Auralis Watchblade'),
@@ -33,8 +35,8 @@ INSERT INTO `hf_zone` VALUES
 (19,'starfall','Starfall','Starfall-SmoothPathArrows.swf','Starwatcher Sol','Starwatcher','The false Heart is rising into the sky. Starfall is the last stable path to the prison. Collect the star seals and defeat the fallen astronomer.','Starborn Sentry','Fallen Astronomer','Star Seal','Astral Lens','Starwatch Garb','Starfall Blade'),
 (20,'celestialdepths','Celestial Depths','CelestialDepths.swf','Heartkeeper Aerin','Heartkeeper','The prison is open, but not lost. The fragments can still become locks again. Defeat the Sovereign''s avatar and restore the Aera Heart.','Null Echo','Sovereign Avatar','Null Fragment','Sovereign Core','Heartkeeper Plate','Heartward');
 
-DROP TEMPORARY TABLE IF EXISTS `hf_skill`;
-CREATE TEMPORARY TABLE `hf_skill` (`sid` int NOT NULL PRIMARY KEY,`classid` int NOT NULL,`name` varchar(64) NOT NULL,`damage` decimal(6,2) NOT NULL,`mana` int NOT NULL,`rangev` int NOT NULL,`refv` varchar(8) NOT NULL,`cooldown` int NOT NULL,`hits` int NOT NULL);
+DROP TABLE IF EXISTS `hf_skill`;
+CREATE TABLE `hf_skill` (`sid` int NOT NULL PRIMARY KEY,`classid` int NOT NULL,`name` varchar(64) NOT NULL,`damage` decimal(6,2) NOT NULL,`mana` int NOT NULL,`rangev` int NOT NULL,`refv` varchar(8) NOT NULL,`cooldown` int NOT NULL,`hits` int NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 INSERT INTO `hf_skill` VALUES
 (826001,825001,'Wild Strike',0.5,0,303,'aa',1500,1),(826002,825001,'Briar Cut',1.05,10,303,'a1',3200,1),(826003,825001,'Thorn Rush',1.35,18,303,'a2',5800,1),(826004,825001,'Greenward Sweep',0.85,24,303,'a3',8500,2),(826005,825001,'Verdant Verdict',2.25,30,303,'a4',14000,1),
 (826006,825002,'Quick Shot',0.5,0,808,'aa',1500,1),(826007,825002,'Rift Arrow',1.05,10,808,'a1',3200,1),(826008,825002,'Frostline',1.35,18,808,'a2',5800,1),(826009,825002,'Split Volley',0.85,24,808,'a3',8500,2),(826010,825002,'Shardpiercer',2.25,30,808,'a4',14000,1),
@@ -148,5 +150,5 @@ CALL `install_aera_heartfall`()$$
 DROP PROCEDURE `install_aera_heartfall`$$
 DELIMITER ;
 
-DROP TEMPORARY TABLE IF EXISTS `hf_skill`;
-DROP TEMPORARY TABLE IF EXISTS `hf_zone`;
+DROP TABLE IF EXISTS `hf_skill`;
+DROP TABLE IF EXISTS `hf_zone`;
