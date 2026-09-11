@@ -5,6 +5,7 @@
 
 package 
 {
+    import liteAssets.RiftSpawnPoint;
     import flash.display.MovieClip;
     import flash.display.Loader;
     import flash.display.BitmapData;
@@ -43,7 +44,7 @@ import flash.net.URLLoaderDataFormat;
         public function registerRiftArea(state:Object):void
         {
             if(!state.active){riftAreaRegistration="";return;}
-            if(strMapName==null||strMapName.toLowerCase()!=String(state.map).toLowerCase()||liteAssets.RiftSpawnPoint.floors(map).length==0)return;
+            if(strMapName==null||strMapName.toLowerCase()!=String(state.map).toLowerCase()||RiftSpawnPoint.floors(map).length==0)return;
             var key:String=String(state.id)+":"+curRoom+":"+strFrame;
             if(key==riftAreaRegistration)return;
             riftAreaRegistration=key;
@@ -6461,7 +6462,7 @@ import flash.net.URLLoaderDataFormat;
                 point.y = Number(avt.objData.Y);
                 if ("riftSpawnSeed" in avt.objData)
                 {
-                    var riftPoint:Point=liteAssets.RiftSpawnPoint.choose(map,CHARS,uint(avt.objData.riftSpawnSeed));
+                    var riftPoint:Point=RiftSpawnPoint.choose(map,CHARS,uint(avt.objData.riftSpawnSeed));
                     if(riftPoint==null)continue;
                     point.x=riftPoint.x;point.y=riftPoint.y;
                 }
