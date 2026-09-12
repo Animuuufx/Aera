@@ -18,10 +18,13 @@ package liteAssets.draw
         public function expeditionPanel(send:Function)
         {
             sender=send;x=140;y=40;
-            addEventListener(MouseEvent.CLICK,onPanelClick,false,0,true);
-            addEventListener(MouseEvent.MOUSE_DOWN,onDragStart,false,0,true);
-            addEventListener(Event.ADDED_TO_STAGE,onAddedToStage,false,0,true);
-            addEventListener(Event.ENTER_FRAME,onPersistentFrame,false,0,true);
+            // Keep these listeners strong. Expedition rooms load/unload a lot of
+            // display content and can trigger GC; weak UI listeners could disappear
+            // while the HUD itself remained visible, leaving a dead-looking bar.
+            addEventListener(MouseEvent.CLICK,onPanelClick,false,0,false);
+            addEventListener(MouseEvent.MOUSE_DOWN,onDragStart,false,0,false);
+            addEventListener(Event.ADDED_TO_STAGE,onAddedToStage,false,0,false);
+            addEventListener(Event.ENTER_FRAME,onPersistentFrame,false,0,false);
             render();
         }
 
@@ -84,7 +87,9 @@ package liteAssets.draw
             removeEventListener(Event.ADDED_TO_STAGE,onAddedToStage);
             if(stage!=null)
             {
-                stage.addEventListener(MouseEvent.MOUSE_UP,onDragStop,false,0,true);
+                // Strong stage listener prevents a room/map load GC pass from
+                // dropping drag-stop handling while the panel remains alive.
+                stage.addEventListener(MouseEvent.MOUSE_UP,onDragStop,false,0,false);
             }
             clampToStage();
         }
@@ -158,9 +163,11 @@ package liteAssets.draw
             var b:Sprite=new Sprite();b.x=left;b.y=top;b.buttonMode=true;
             b.graphics.beginFill(0x3A3345);b.graphics.lineStyle(1,0xAC8E58);b.graphics.drawRoundRect(0,0,width,30,5);b.graphics.endFill();
             var f:TextField=new TextField();f.defaultTextFormat=new TextFormat("Arial",12,0xFFE2AB,true);f.text=label;f.width=width;f.height=25;f.y=5;f.mouseEnabled=false;b.addChild(f);
-            // Buttons must not start a panel drag.
-            b.addEventListener(MouseEvent.MOUSE_DOWN,function(e:MouseEvent):void { e.stopPropagation(); },false,0,true);
-            b.addEventListener(MouseEvent.CLICK,function(e:MouseEvent):void { e.stopPropagation();action(); },false,0,true);
+            // Buttons must not start a panel drag. These anonymous handlers must be
+            // strong references: with weak listeners Flash can garbage-collect them
+            // during a map load even though the button is still on screen.
+            b.addEventListener(MouseEvent.MOUSE_DOWN,function(e:MouseEvent):void { e.stopPropagation(); },false,0,false);
+            b.addEventListener(MouseEvent.CLICK,function(e:MouseEvent):void { e.stopPropagation();action(); },false,0,false);
             addChild(b);
         }
 
