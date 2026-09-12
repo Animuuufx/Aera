@@ -21,6 +21,7 @@ package liteAssets.draw
             addEventListener(MouseEvent.CLICK,onPanelClick,false,0,true);
             addEventListener(MouseEvent.MOUSE_DOWN,onDragStart,false,0,true);
             addEventListener(Event.ADDED_TO_STAGE,onAddedToStage,false,0,true);
+            addEventListener(Event.ENTER_FRAME,onPersistentFrame,false,0,true);
             render();
         }
 
@@ -86,6 +87,24 @@ package liteAssets.draw
                 stage.addEventListener(MouseEvent.MOUSE_UP,onDragStop,false,0,true);
             }
             clampToStage();
+        }
+
+        // Map/interface loads can add new top-level display objects after this HUD.
+        // The expedition bar remains visible in that case, but those objects can sit
+        // above it in the hit-test stack and swallow Open/Hide/drag clicks. Keep an
+        // active expedition HUD at the front so it stays interactive across rooms.
+        private function onPersistentFrame(e:Event):void
+        {
+            if(!visible||parent==null||data==null||data.run==null)
+            {
+                return;
+            }
+            mouseEnabled=true;
+            mouseChildren=true;
+            if(parent.getChildIndex(this)!=(parent.numChildren-1))
+            {
+                parent.setChildIndex(this,parent.numChildren-1);
+            }
         }
 
         private function onDragStart(e:MouseEvent):void
