@@ -31,6 +31,9 @@ package
             if (_arg_1.length > 0 && (_arg_2 == "btnChar" || _arg_1[_arg_1.length - 1].txt == "Your Hero"))
             {
                 _arg_1 = _arg_1.concat();
+                var hasExpedition:Boolean = false;
+                for each (var expeditionEntry:Object in _arg_1) if (expeditionEntry.fct == "rootClass.toggleExpeditionPanel") hasExpedition = true;
+                if (!hasExpedition) _arg_1.splice(_arg_1.length - 1, 0, {"txt":"Expedition", "fct":"rootClass.toggleExpeditionPanel"});
                 var hasRift:Boolean = false;
                 for each (var entry:Object in _arg_1) if (entry.fct == "rootClass.toggleRiftPanel") hasRift = true;
                 if (!hasRift) _arg_1.splice(_arg_1.length - 1, 0, {"txt":"Rift", "fct":"rootClass.toggleRiftPanel"});

@@ -72,6 +72,7 @@ final class ClientSession
     public ?int $tradeTarget=null;
     public string $riftShopToken='';
     public float $lastRiftPanelRequestMs=0.0;
+    public float $lastExpeditionRequestMs=0.0;
     /** @var array<int,bool> SmartFox user IDs that requested a trade with this player. */
     public array $tradeRequests=[];
     public array $tradeItems=[];

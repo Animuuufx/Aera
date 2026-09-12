@@ -73,6 +73,7 @@ import flash.system.ApplicationDomain;
     {
         private var aeraRiftHUD:liteAssets.draw.riftHUD;
         private var aeraRiftPanel:liteAssets.draw.riftPanel;
+        private var aeraExpeditionPanel:liteAssets.draw.expeditionPanel;
 
 
         public static var ISWEB:Boolean = true;
@@ -421,6 +422,7 @@ import flash.system.ApplicationDomain;
             var onConnectionLostHandler:Function = function (_arg_1:SFSEvent)
             {
                 if (aeraRiftPanel != null) aeraRiftPanel.reset();
+                if (aeraExpeditionPanel != null) aeraExpeditionPanel.reset();
                 var _local_2:Boolean;
                 if (!serialCmdMode)
                 {
@@ -484,6 +486,7 @@ import flash.system.ApplicationDomain;
             var onLogoutHandler:Function = function (_arg_1:SFSEvent)
             {
                 if (aeraRiftPanel != null) aeraRiftPanel.reset();
+                if (aeraExpeditionPanel != null) aeraExpeditionPanel.reset();
                 if (!serialCmdMode)
                 {
                     if (world != null)
@@ -3692,6 +3695,14 @@ import flash.system.ApplicationDomain;
                             }, tAvt, tLeaf);
                             tLeaf.auras = [];
                             break;
+                        case "expeditionState":
+                            ensureExpeditionPanel();
+                            aeraExpeditionPanel.update(resObj);
+                            break;
+                        case "expeditionError":
+                            ensureExpeditionPanel();
+                            aeraExpeditionPanel.error(String(resObj.message));
+                            break;
                         case "riftState":
                             updateRiftHUD(resObj);
                             break;
@@ -4943,6 +4954,25 @@ import flash.system.ApplicationDomain;
                 chatF.rootClass = this;
                 intChatMode = 0;
             }
+        }
+
+        private function ensureExpeditionPanel():void
+        {
+            if (aeraExpeditionPanel == null)
+            {
+                aeraExpeditionPanel = new liteAssets.draw.expeditionPanel(sendExpeditionCommand);
+                addChild(aeraExpeditionPanel);
+            }
+            setChildIndex(aeraExpeditionPanel, numChildren - 1);
+        }
+        public function toggleExpeditionPanel():void
+        {
+            ensureExpeditionPanel();aeraExpeditionPanel.open();
+        }
+        private function sendExpeditionCommand(args:Array):void
+        {
+            if (sfc == null || world == null) return;
+            sfc.sendXtMessage("zm", "cmd", ["expedition"].concat(args), "str", world.curRoom);
         }
 
         private function updateRiftHUD(state:Object):void
@@ -10396,11 +10426,11 @@ import flash.system.ApplicationDomain;
                     throw new Error("Empty bank response");
                 }
                 _local_2 = com.adobe.serialization.json.JSON.decode(String(_arg_1.target.data));
-                if (_local_2 == null)
+                if (!(_local_2 is Array))
                 {
                     throw new Error("Invalid bank response");
                 }
-                world.addItemsToBank(_local_2);
+                world.addItemsToBank(_local_2 as Array);
             }
             catch(e:Error)
             {
@@ -12147,6 +12177,7 @@ import flash.system.ApplicationDomain;
         public function logout():void
         {
             if (aeraRiftPanel != null) aeraRiftPanel.reset();
+            if (aeraExpeditionPanel != null) aeraExpeditionPanel.reset();
             if (aeraRiftHUD != null) aeraRiftHUD.visible = false;
             if (((intChatMode) && (chatF.bTall)))
             {
@@ -13711,4 +13742,3 @@ import flash.system.ApplicationDomain;
 
     }
 }//package 
-

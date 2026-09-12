@@ -2,6 +2,7 @@ package
 {
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
+    import flash.display.InteractiveObject;
     import flash.display.MovieClip;
     import flash.display.Sprite;
     import flash.events.Event;
@@ -144,7 +145,7 @@ package
             }
 
             arrowArt.name = "arrowArt";
-            arrowArt.mouseEnabled = false;
+            if (arrowArt is InteractiveObject) InteractiveObject(arrowArt).mouseEnabled = false;
 
             if (arrowArt is DisplayObjectContainer)
             {

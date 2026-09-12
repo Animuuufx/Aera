@@ -1,5 +1,8 @@
 # Aera PHP Emulator v30
 
+Aera Expeditions adds private roguelite runs, temporary blessings, Marks and
+weekly records. See [installation and rules](docs/EXPEDITIONS.md).
+
 Aera Rifts adds shared dynamic world events, mutations, contribution rewards,
 and a Rift Shard shop. See [setup and operations](docs/AERA_RIFTS.md).
 

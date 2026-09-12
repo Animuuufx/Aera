@@ -2524,6 +2524,10 @@ package
                                 xtArr.push(params.slice(2).join(" "));
                             }
                             break;
+                        case "expedition":
+                        case "gauntlet":
+                            rootClass.toggleExpeditionPanel();
+                            break;
                         case "rift":
                             cmd = "cmd";
                             xtArr.push("rift");

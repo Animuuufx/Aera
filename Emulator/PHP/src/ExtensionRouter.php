@@ -35,6 +35,8 @@ final class ExtensionRouter
 
     public function handle(ClientSession $u,string $cmd,array $p,int $fromRoom): void
     {
+        $expedition=$this->server->expeditions?->inRoom($u);
+        if($expedition&&in_array($cmd,['gar','aggroMon','castt'],true)&&($expedition->phase!=='combat'||$expedition->settlement!==null))return;
         if(!isset($this->supported[$cmd])){$this->server->sendRaw($u,['server','Unknown request: '.$cmd]);return;}
         switch($cmd){
             case 'hi':$this->server->sendRaw($u,['hi']);break;
@@ -197,6 +199,8 @@ final class ExtensionRouter
     }
     private function moveToCell(ClientSession $u,array $p): void
     {
+        $expedition=$this->server->expeditions?->inRoom($u);
+        if($expedition&&(string)($p[0]??'')!==$expedition->frame)return;
         $r=$this->server->currentRoom($u);
         // Java's MonsterAttack task drops a target as soon as its map frame no
         // longer matches the player's frame. Remove it immediately here too so
@@ -283,6 +287,7 @@ final class ExtensionRouter
         $cmd=strtolower(trim((string)($p[0]??'')));
         if($cmd==='')return;
 
+        if($cmd==='expedition'||$cmd==='gauntlet'){$this->server->expeditions?->command($u,array_slice($p,1));return;}
         if($cmd==='rift'){$this->server->rifts?->playerCommand($u,array_slice($p,1));return;}
         // Player commands from Java UserCommand.
         if($cmd==='tfer'){
@@ -609,6 +614,7 @@ if($cmd==='level'){
                     $damage=$this->combat->monsterIncoming($damage,(array)($m['auras']??[]),$now,$school);
                     if((float)$m['DamageReduction']>0)$damage=(int)round($damage*max(0.0,1.0-(float)$m['DamageReduction']));
                 }
+                $damage=$this->server->expeditions?->damage($u,$m,$damage)??$damage;
                 $this->server->rifts?->hit($u,$m,$damage);
                 if($damage>=0)$m['HP']=max(0,(int)$m['HP']-$damage);else$m['HP']=min((int)$m['HPMax'],(int)$m['HP']-$damage);
                 if(!$granted&&$skillRef==='aa'&&$damage>0&&in_array($type,['hit','crit'],true)){$u->mp=min($u->mpMax,$u->mp+($type==='crit'?(int)$this->config->get('basic_crit_mana',6):(int)$this->config->get('basic_hit_mana',4)));$granted=true;}
@@ -978,6 +984,7 @@ if($cmd==='level'){
     /** Java MonsterState.giveRewards() parity: every participant receives independently rolled drops and rewards. */
     private function rewardMonster(ClientSession $u,array $m): void
     {
+        if(isset($m['expeditionId']))return; // Expedition Marks are the exclusive run reward.
         if(isset($m['riftId']))return; // Rift ledger is the exclusive reward authority.
         try{
             $mon=$this->world->monsters[(int)($m['MonID']??0)]??null;
@@ -2094,6 +2101,7 @@ if($cmd==='level'){
     }
     private function restorePlayer(ClientSession $u,array $p=[]): void
     {
+        if($this->server->expeditions?->inRoom($u))return;
         if($u->state!==0||$u->hp>0)return;
         $now=microtime(true);
         if($u->respawnAt<=0.0||$now<$u->respawnAt){$this->log->warn('Rejected early resPlayerTimed from '.$u->username);return;}

@@ -86,7 +86,7 @@ final class RiftManager
     }
     private function eligible(RoomState $room): bool
     {
-        if(!$this->event||isset($room->meta['house'])||(int)($room->map['PvP']??0)!==0)return false;
+        if(!$this->event||isset($room->meta['house'])||isset($room->meta['expedition'])||(int)($room->map['PvP']??0)!==0)return false;
         $parts=explode('-',$room->name,2);
         return strcasecmp($parts[0],(string)$this->event->definition['Map'])===0&&(int)($parts[1]??1)<=999;
     }

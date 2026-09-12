@@ -44,7 +44,7 @@ package
 
             world = worldRef;
             avatar = avatarRef;
-            owner = ((avatar != null) ? avatar.pMC : null);
+            owner = ((avatar != null) ? (avatar.pMC as AvatarMC) : null);
             imageURL = url;
             requestedScale = scaleValue;
             offsetX = xOffset;
